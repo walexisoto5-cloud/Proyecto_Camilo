@@ -10,12 +10,11 @@ class AuthController {
     }
 
     public function login() {
-        // Verificar si la petición viene por POST
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $identificador = trim($_POST['identificador'] ?? '');
             $password = $_POST['password'] ?? '';
 
-            // Validar campos vacíos
+            // validar campos vacios
             if (empty($identificador) || empty($password)) {
                 $_SESSION['error'] = "Por favor, ingrese su documento/correo y contraseña.";
                 header("Location: index.php?action=login");
@@ -32,15 +31,13 @@ class AuthController {
                     exit();
                 }
 
-                // Regenerar ID de sesión para prevenir Session Fixation
                 session_regenerate_id(true);
 
-                // Guardar datos clave en la sesión
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['rol'] = $user['rol'];
                 $_SESSION['logged_in'] = true;
 
-                // Redireccionar según el rol del usuario
+                // Redireccionar segun el rol del usuario
                 if ($user['rol'] === 'Administrador' || $user['rol'] === 'Instructor') {
                     header("Location: index.php?action=admin_dashboard");
                 } else {
