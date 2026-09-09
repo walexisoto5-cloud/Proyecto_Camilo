@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Control de Asistencia - SENA</title>
-    <!-- Bootstrap 5 CSS via CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
         body {
@@ -37,7 +35,7 @@
         <div class="card card-login bg-white p-4">
             <div class="card-body">
                 
-                <!-- Encabezado / Logo Placeholder -->
+                <!-- logo -->
                 <div class="text-center mb-4">
                     <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 70px; height: 70px;">
                         <i class="bi bi-person-badge text-success fs-1"></i>
@@ -45,7 +43,7 @@
                     <h4 class="fw-bold text-dark mb-1">Control de Asistencia</h4>
                 </div>
 
-                <!-- Alertas de Error -->
+                <!-- alertas de error -->
                 <?php if (isset($_SESSION['error'])): ?>
                     <div class="alert alert-danger alert-dismissible fade show py-2 px-3 small mb-3" role="alert">
                         <i class="bi bi-exclamation-triangle-fill me-2"></i>
@@ -55,7 +53,7 @@
                     <?php unset($_SESSION['error']); ?>
                 <?php endif; ?>
 
-                <!-- Formulario -->
+                
                 <form action="index.php?action=do_login" method="POST" autocomplete="off">
                     
                     <div class="mb-3">
@@ -87,7 +85,7 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS (necesario para cerrar alertas dinámicas) -->
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
