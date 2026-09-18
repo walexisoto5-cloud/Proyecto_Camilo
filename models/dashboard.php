@@ -1,69 +1,96 @@
 <?php
-class Dashboard {
+class Dashboard
+{
     private $conn;
 
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->conn = $db;
     }
 
-    // Total de aprendices registrados y activos
-    public function obtenerTotalAprendices() {
-        $query = "SELECT COUNT(*) as total FROM aprendiz WHERE estado = 'activo'";
-        $resultado = $this->conn->query($query);
-        $fila = $resultado->fetch_assoc();
-        return $fila['total'] ?? 0;
+    // 1. Total Aprendices
+    public function obtenerTotalAprendices()
+    {
+        $sql = "SELECT COUNT(*) as total FROM aprendiz";
+        $result = $this->conn->query($sql);
+        $row = $result->fetch_assoc();
+        return $row['total'] ?? 0;
     }
 
-    // Asistencias registradas el día de hoy
-    public function obtenerAsistenciasHoy() {
-        $fechaHoy = date('Y-m-d');
-        $query = "SELECT COUNT(*) as total FROM asistencia WHERE fecha = '$fechaHoy' AND estado = 'presente'";
-        $resultado = $this->conn->query($query);
-        $fila = $resultado->fetch_assoc();
-        return $fila['total'] ?? 0;
+    // 2. Asistencias de hoy
+    public function obtenerAsistenciasHoy()
+    {
+        $sql = "SELECT COUNT(*) as total FROM asistencia WHERE fecha_asistencia = CURDATE()";
+        $result = $this->conn->query($sql);
+        $row = $result->fetch_assoc();
+        return $row['total'] ?? 0;
     }
 
-    // Retardos / novedades registrados el día de hoy
-    public function obtenerRetardosHoy() {
-        $fechaHoy = date('Y-m-d');
-        $query = "SELECT COUNT(*) as total FROM novedad WHERE fecha = '$fechaHoy' OR tipo_novedad = 'retardo'";
-        $resultado = $this->conn->query($query);
-        $fila = $resultado->fetch_assoc();
-        return $fila['total'] ?? 0;
+    // 3. Retardos de hoy
+    public function obtenerRetardosHoy()
+    {
+        $sql = "SELECT COUNT(*) as total FROM asistencia WHERE fecha_asistencia = CURDATE() AND estado_entrada = 'retardo'";
+        $result = $this->conn->query($sql);
+        $row = $result->fetch_assoc();
+        return $row['total'] ?? 0;
     }
 
-    // Excusas pendientes por revisar
-    public function obtenerExcusasPendientes() {
-        $query = "SELECT COUNT(*) as total FROM excusa WHERE estado = 'pendiente'";
-        $resultado = $this->conn->query($query);
-        $fila = $resultado->fetch_assoc();
-        return $fila['total'] ?? 0;
+    // 4. Excusas pendientes
+    public function obtenerExcusasPendientes()
+    {
+        $sql = "SELECT COUNT(*) as total FROM excusa WHERE estado = 'Pendiente'";
+        $result = $this->conn->query($sql);
+        $row = $result->fetch_assoc();
+        return $row['total'] ?? 0;
     }
 
-    // Últimos marcajes/asistencias registradas para mostrar en tabla
-    public function obtenerUltimasAsistencias($limite = 5) {
-        $query = "SELECT a.fecha, a.hora_ingreso, a.estado, ap.nombre, ap.apellido, f.numero_ficha 
-                  FROM asistencia a
-                  INNER JOIN aprendiz ap ON a.fk_id_aprendiz = ap.id_aprendiz
-                  LEFT JOIN ficha f ON ap.fk_id_ficha = f.id_ficha
-                  ORDER BY a.fecha DESC, a.hora_ingreso DESC 
-                  LIMIT $limite";
-        $resultado = $this->conn->query($query);
-        return $resultado ? $resultado->fetch_all(MYSQLI_ASSOC) : [];
+    // 5. Últimos marcajes (JOIN con aprendiz y usuario)
+    public function obtenerUltimasAsistencias($limite = 5)
+    {
+        $sql = "SELECT a.*, u.nombre, u.apellido 
+                FROM asistencia a 
+                INNER JOIN aprendiz ap ON a.fk_aprendiz = ap.id_aprendiz 
+                INNER JOIN usuario u ON ap.fk_usuario = u.id_usuario 
+                ORDER BY a.fecha_asistencia DESC, a.entrada DESC LIMIT ?";
+
+        $stmt = $this->conn->prepare($sql);
+        
+        if (!$stmt) {
+            error_log("Error SQL en obtenerUltimasAsistencias: " . $this->conn->error);
+            return [];
+        }
+
+        $stmt->bind_param("i", $limite);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
 
-    // Método para crear una nueva Ficha
-    public function crearFicha($numeroFicha, $programa) {
-        $stmt = $this->conn->prepare("INSERT INTO ficha (numero_ficha, programa_formacion) VALUES (?, ?)");
-        $stmt->bind_param("ss", $numeroFicha, $programa);
+    // 6. Crear Ficha
+    public function crearFicha($numeroFicha, $programa, $jornada = '')
+    {
+        $stmt = $this->conn->prepare("INSERT INTO ficha (numero_ficha, nombre_programa, jornada) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $numeroFicha, $programa, $jornada);
         return $stmt->execute();
     }
 
-    // Método para registrar un nuevo Instructor/Usuario
-    public function crearInstructor($documento, $nombre, $apellido, $correo, $contrasena, $fk_id_rol = 2) {
-        $passHash = password_hash($contrasena, PASSWORD_BCRYPT);
-        $stmt = $this->conn->prepare("INSERT INTO usuario (documento, nombre, apellido, correo, contrasena, fk_id_rol, estado) VALUES (?, ?, ?, ?, ?, ?, 'activo')");
-        $stmt->bind_param("sssssi", $documento, $nombre, $apellido, $correo, $passHash, $fk_id_rol);
+    // 7. Crear Instructor (Adaptado exactamente al controlador)
+    // $correo actúa como $nombre_usuario en la BD para el inicio de sesión
+    public function crearInstructor($identificacion, $nombre, $apellido, $correo, $contrasena)
+    {
+        $hash = password_hash($contrasena, PASSWORD_DEFAULT);
+        
+        $sql = "INSERT INTO usuario (identificacion, nombre, apellido, nombre_usuario, contrasena, fk_rol) 
+                VALUES (?, ?, ?, ?, ?, 2)";
+                
+        $stmt = $this->conn->prepare($sql);
+
+        if (!$stmt) {
+            error_log("Error en prepare SQL crearInstructor: " . $this->conn->error);
+            return false;
+        }
+
+        $stmt->bind_param("sssss", $identificacion, $nombre, $apellido, $correo, $hash);
         return $stmt->execute();
     }
 }

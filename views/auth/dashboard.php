@@ -4,238 +4,264 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Control de Asistencia</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Bootstrap 5 CSS e Íconos -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Estilos Personalizados del Dashboard -->
     <link rel="stylesheet" href="public/css/dashboard.css">
 </head>
-<body class="bg-light">
+<body>
 
-<div class="d-flex min-vh-100">
-    <!-- Menú Lateral -->
-    <div class="sidebar-nav bg-success d-flex flex-column align-items-center py-4 rounded-end-4 shadow" style="width: 70px;">
-        <a href="#" class="mb-4 text-white fs-4 text-decoration-none" title="SENA Control">
-            <i class="fa-solid fa-graduation-cap"></i>
-        </a>
-        <ul class="nav nav-pills flex-column mb-auto text-center w-100 px-2">
-            <li class="nav-item mb-3">
-                <a href="index.php?action=dashboard" class="nav-link active bg-white text-success rounded-3 fs-5" title="Inicio">
-                    <i class="fa-solid fa-house"></i>
+    <div class="dashboard-container">
+
+        <!-- Sidebar Flotante -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <nav class="nav-items">
+                <a href="index.php?action=dashboard" class="nav-item-btn active" title="Dashboard">
+                    <i class="bi bi-grid-fill fs-5"></i>
                 </a>
-            </li>
-            <!-- Botón Modal Agregar Ficha -->
-            <li class="nav-item mb-3">
-                <button type="button" class="btn btn-link text-white-50 p-0 fs-5 w-100" data-bs-toggle="modal" data-bs-target="#modalFicha" title="Agregar Nueva Ficha">
-                    <i class="fa-solid fa-folder-plus"></i>
-                </button>
-            </li>
-            <!-- Botón Modal Agregar Instructor -->
-            <li class="nav-item mb-3">
-                <button type="button" class="btn btn-link text-white-50 p-0 fs-5 w-100" data-bs-toggle="modal" data-bs-target="#modalInstructor" title="Agregar Instructor">
-                    <i class="fa-solid fa-user-tie"></i>
-                </button>
-            </li>
-            <li class="nav-item mb-3">
-                <a href="#" class="nav-link text-white-50 rounded-3 fs-5" title="Aprendices">
-                    <i class="fa-solid fa-users"></i>
+                <a href="#" class="nav-item-btn" data-bs-toggle="modal" data-bs-target="#modalFicha" title="Nueva Ficha">
+                    <i class="bi bi-journal-plus fs-5"></i>
                 </a>
-            </li>
-            <li class="nav-item mb-3">
-                <a href="#" class="nav-link text-white-50 rounded-3 fs-5" title="Asistencias">
-                    <i class="fa-solid fa-clipboard-check"></i>
+                <a href="#" class="nav-item-btn" data-bs-toggle="modal" data-bs-target="#modalInstructor" title="Nuevo Instructor">
+                    <i class="bi bi-person-plus-fill fs-5"></i>
                 </a>
-            </li>
-        </ul>
-        <a href="index.php?action=logout" class="text-white-50 mt-auto fs-5 text-decoration-none" title="Cerrar Sesión">
-            <i class="fa-solid fa-right-from-bracket"></i>
-        </a>
-    </div>
+                <a href="index.php?action=logout" class="nav-item-btn mt-auto" title="Cerrar Sesión">
+                    <i class="bi bi-box-arrow-right fs-5"></i>
+                </a>
+            </nav>
+        </aside>
 
-    <!-- Contenido Principal -->
-    <div class="flex-grow-1 p-4">
-        
-        <?php if (!empty($mensaje)): ?>
-            <div class="alert alert-<?php echo htmlspecialchars($tipoMensaje ?? 'info'); ?> alert-dismissible fade show rounded-4 shadow-sm" role="alert">
-                <?php echo htmlspecialchars($mensaje); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        <?php endif; ?>
+        <!-- Contenido Central -->
+        <main class="main-content">
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h3 class="fw-bold mb-0 text-dark">Panel de Control - Asistencia</h3>
-                <p class="text-muted small mb-0">Arquitectura MVC - Datos en tiempo real</p>
-            </div>
-            <span class="badge bg-success px-3 py-2 rounded-pill fs-6">
-                <i class="fa-solid fa-database me-1"></i> BD Conectada
-            </span>
-        </div>
-
-        <!-- Tarjetas de Métricas -->
-        <div class="row g-4 mb-4">
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm rounded-4 p-3 text-center">
-                    <span class="text-secondary small fw-semibold">Aprendices Activos</span>
-                    <h3 class="fw-bold my-1 text-primary"><?php echo htmlspecialchars($totalAprendices ?? 0); ?></h3>
-                    <small class="text-muted">En el sistema</small>
+            <!-- Encabezado -->
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <h2 class="fw-bold mb-1" style="color: var(--text-dark);">¡Hola, <?= htmlspecialchars((string)($nombreUsuario ?? 'Usuario')); ?>!</h2>
+                    <p class="text-muted small mb-0">Resumen del sistema de gestión de asistencia</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-action-custom shadow-sm" data-bs-toggle="modal" data-bs-target="#modalFicha">
+                        <i class="bi bi-plus-lg me-1"></i> Ficha
+                    </button>
+                    <button class="btn btn-action-orange shadow-sm" data-bs-toggle="modal" data-bs-target="#modalInstructor">
+                        <i class="bi bi-person-plus me-1"></i> Instructor
+                    </button>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm rounded-4 p-3 text-center">
-                    <span class="text-secondary small fw-semibold">Asistencias Hoy</span>
-                    <h3 class="fw-bold my-1 text-success"><?php echo htmlspecialchars($asistenciasHoy ?? 0); ?></h3>
-                    <small class="text-success">Registradas</small>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm rounded-4 p-3 text-center">
-                    <span class="text-secondary small fw-semibold">Novedades / Retardos</span>
-                    <h3 class="fw-bold my-1 text-warning"><?php echo htmlspecialchars($retardosHoy ?? 0); ?></h3>
-                    <small class="text-warning">Reportadas</small>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm rounded-4 p-3 text-center">
-                    <span class="text-secondary small fw-semibold">Excusas Pendientes</span>
-                    <h3 class="fw-bold my-1 text-danger"><?php echo htmlspecialchars($excusasPendientes ?? 0); ?></h3>
-                    <small class="text-danger">Por revisar</small>
-                </div>
-            </div>
-        </div>
 
-        <!-- Tabla con Datos Reales -->
-        <div class="row g-4">
-            <div class="col-lg-8">
-                <div class="card border-0 shadow-sm rounded-4 p-4">
-                    <h5 class="fw-bold mb-3 text-dark">
-                        <i class="fa-solid fa-clock-rotate-left me-2 text-success"></i>Últimos Marcajes Registrados
-                    </h5>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Aprendiz</th>
-                                    <th>Ficha</th>
-                                    <th>Fecha</th>
-                                    <th>Hora</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($ultimosMarcajes)): ?>
-                                    <?php foreach ($ultimosMarcajes as $row): ?>
-                                        <tr>
-                                            <td class="fw-semibold"><?php echo htmlspecialchars($row['nombre'] . ' ' . $row['apellido']); ?></td>
-                                            <td><span class="badge bg-secondary"><?php echo htmlspecialchars($row['numero_ficha'] ?? 'N/A'); ?></span></td>
-                                            <td><?php echo htmlspecialchars($row['fecha']); ?></td>
-                                            <td><?php echo htmlspecialchars($row['hora_ingreso']); ?></td>
-                                            <td>
-                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                                                    <?php echo ucfirst(htmlspecialchars($row['estado'])); ?>
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
+            <!-- Alertas -->
+            <?php if (!empty($mensaje)): ?>
+                <div class="alert alert-<?= htmlspecialchars((string)($tipoMensaje ?? 'info')); ?> alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <?= htmlspecialchars((string)$mensaje); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
+
+            <!-- KPIs -->
+            <div class="row g-3">
+                <div class="col-6 col-md-3">
+                    <div class="dashboard-card stat-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="stat-icon"><i class="bi bi-people"></i></div>
+                        </div>
+                        <h3 class="fw-bold mb-1"><?= (int)($totalAprendices ?? 0); ?></h3>
+                        <span class="text-muted small fw-semibold">Aprendices</span>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <div class="dashboard-card stat-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="stat-icon" style="color: #28a745; background: #e8f8ec;"><i class="bi bi-check-circle"></i></div>
+                        </div>
+                        <h3 class="fw-bold mb-1"><?= (int)($asistenciasHoy ?? 0); ?></h3>
+                        <span class="text-muted small fw-semibold">Asistencias Hoy</span>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <div class="dashboard-card stat-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="stat-icon" style="color: #ffc107; background: #fffbf0;"><i class="bi bi-clock-history"></i></div>
+                        </div>
+                        <h3 class="fw-bold mb-1"><?= (int)($retardosHoy ?? 0); ?></h3>
+                        <span class="text-muted small fw-semibold">Retardos Hoy</span>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <div class="dashboard-card stat-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="stat-icon" style="color: #dc3545; background: #fdeef0;"><i class="bi bi-file-earmark-text"></i></div>
+                        </div>
+                        <h3 class="fw-bold mb-1"><?= (int)($excusasPendientes ?? 0); ?></h3>
+                        <span class="text-muted small fw-semibold">Excusas Pend.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla Últimos Marcajes -->
+            <div class="dashboard-card mt-2">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Últimos Marcajes</h5>
+                    <span class="badge bg-light text-dark fw-normal px-3 py-2 border">Recientes</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th>APRENDIZ</th>
+                                <th>FECHA</th>
+                                <th>ENTRADA</th>
+                                <th>ESTADO</th>
+                                <th>SALIDA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($ultimosMarcajes) && is_array($ultimosMarcajes)): ?>
+                                <?php foreach ($ultimosMarcajes as $registro): ?>
+                                    <?php 
+                                        $nombreReg = (string)($registro['nombre'] ?? 'Sin Nombre');
+                                        $apellidoReg = (string)($registro['apellido'] ?? '');
+                                        $fechaReg = (string)($registro['fecha_asistencia'] ?? '-');
+                                        $entradaReg = (string)($registro['entrada'] ?? '-');
+                                        $estadoReg = (string)($registro['estado_entrada'] ?? 'N/A');
+                                        $salidaReg = (string)($registro['salida'] ?? '-');
+
+                                        $estadoLower = strtolower($estadoReg);
+                                        $badgeStyle = ($estadoLower === 'a tiempo' || $estadoLower === 'asistió') 
+                                            ? 'background: #e8f8ec; color: #1e7e34;' 
+                                            : (($estadoLower === 'retardo') ? 'background: #fff8e6; color: #b78103;' : 'background: #f0f0f5; color: #6c757d;');
+                                    ?>
                                     <tr>
-                                        <td colspan="5" class="text-center text-muted py-3">
-                                            No hay marcajes registrados aún en la base de datos.
+                                        <td class="fw-semibold text-dark">
+                                            <?= htmlspecialchars(trim($nombreReg . ' ' . $apellidoReg)); ?>
                                         </td>
+                                        <td class="text-muted"><?= htmlspecialchars($fechaReg); ?></td>
+                                        <td class="text-muted"><?= htmlspecialchars($entradaReg); ?></td>
+                                        <td>
+                                            <span class="badge rounded-pill px-3 py-2" style="<?= $badgeStyle; ?>">
+                                                <?= htmlspecialchars($estadoReg); ?>
+                                            </span>
+                                        </td>
+                                        <td class="text-muted"><?= htmlspecialchars($salidaReg); ?></td>
                                     </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">No hay registros de asistencias recientes.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Panel Derecho -->
+        <aside class="right-panel">
+            <div class="dashboard-card user-profile-card">
+                <div class="user-avatar">
+                    <i class="bi bi-person"></i>
+                </div>
+                <h5 class="fw-bold mb-1"><?= htmlspecialchars((string)($nombreUsuario ?? 'Usuario')); ?></h5>
+                <p class="text-muted small mb-3"><?= htmlspecialchars((string)($rolUsuario ?? 'Administrador')); ?></p>
+                <div class="pt-3 border-top d-flex justify-content-around text-center">
+                    <div>
+                        <span class="d-block fw-bold text-dark"><?= (int)($totalAprendices ?? 0); ?></span>
+                        <small class="text-muted" style="font-size: 0.75rem;">Registrados</small>
+                    </div>
+                    <div class="border-start ms-2 ps-2">
+                        <span class="d-block fw-bold text-dark"><?= (int)($asistenciasHoy ?? 0); ?></span>
+                        <small class="text-muted" style="font-size: 0.75rem;">Activos Hoy</small>
                     </div>
                 </div>
             </div>
 
-            <!-- Perfil del usuario -->
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
-                    <div class="mb-3">
-                        <i class="fa-solid fa-circle-user fa-5x text-success"></i>
-                    </div>
-                    <h5 class="fw-bold mb-0 text-dark"><?php echo htmlspecialchars($nombreUsuario ?? 'Usuario Sistema'); ?></h5>
-                    <span class="badge bg-success-subtle text-success mt-2 px-3 py-2 rounded-pill fw-bold">
-                        <?php echo htmlspecialchars($rolUsuario ?? 'Administrador'); ?>
-                    </span>
-                    <hr class="my-4 text-secondary opacity-25">
-                    <p class="small text-muted mb-0">Sistema de Control de Asistencia SENA</p>
-                </div>
+            <div class="dashboard-card p-3" style="background: linear-gradient(135deg, var(--sidebar-purple) 0%, var(--sidebar-dark) 100%); color: white;">
+                <h6 class="fw-bold mb-2"><i class="bi bi-shield-check me-2"></i>Estado del Sistema</h6>
+                <p class="small mb-0 text-white-50">Conexión a base de datos activa y sincronizada.</p>
             </div>
-        </div>
+        </aside>
+
     </div>
-</div>
 
-<!-- MODAL AGREGAR FICHA -->
-<div class="modal fade" id="modalFicha" tabindex="-1" aria-labelledby="modalFichaLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0 shadow">
-            <div class="modal-header bg-success text-white rounded-top-4">
-                <h5 class="modal-title fw-bold" id="modalFichaLabel"><i class="fa-solid fa-folder-plus me-2"></i>Agregar Nueva Ficha</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="index.php?action=crear_ficha" method="POST">
-                <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label for="numero_ficha" class="form-label fw-semibold small">Número de Ficha</label>
-                        <input type="text" class="form-control" id="numero_ficha" name="numero_ficha" placeholder="Ej: 2670123" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="programa_formacion" class="form-label fw-semibold small">Programa de Formación</label>
-                        <input type="text" class="form-control" id="programa_formacion" name="programa_formacion" placeholder="Ej: Análisis y Desarrollo de Software (ADSO)" required>
-                    </div>
+    <!-- Modales -->
+    <div class="modal fade" id="modalFicha" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-journal-plus me-2" style="color: var(--sidebar-purple);"></i>Nueva Ficha</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-footer bg-light border-0 rounded-bottom-4">
-                    <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success rounded-3 fw-bold">Guardar Ficha</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL AGREGAR INSTRUCTOR -->
-<div class="modal fade" id="modalInstructor" tabindex="-1" aria-labelledby="modalInstructorLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0 shadow">
-            <div class="modal-header bg-success text-white rounded-top-4">
-                <h5 class="modal-title fw-bold" id="modalInstructorLabel"><i class="fa-solid fa-user-tie me-2"></i>Agregar Nuevo Instructor</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="index.php?action=crear_instructor" method="POST">
-                <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label for="documento" class="form-label fw-semibold small">Número de Documento</label>
-                        <input type="text" class="form-control" id="documento" name="documento" placeholder="Ej: 1088123456" required>
-                    </div>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label for="nombre" class="form-label fw-semibold small">Nombre</label>
-                            <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre" required>
+                <form action="index.php?action=crear_ficha" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Número de Ficha</label>
+                            <input type="text" class="form-control form-control-lg fs-6" name="numero_ficha" placeholder="Ej. 3234082" required style="border-radius: 12px;">
                         </div>
-                        <div class="col-6">
-                            <label for="apellido" class="form-label fw-semibold small">Apellido</label>
-                            <input type="text" class="form-control" id="apellido" name="apellido" placeholder="Apellido" required>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Programa de Formación</label>
+                            <input type="text" class="form-control form-control-lg fs-6" name="programa_formacion" placeholder="Ej. ADSO" required style="border-radius: 12px;">
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="correo" class="form-label fw-semibold small">Correo Electrónico</label>
-                        <input type="email" class="form-control" id="correo" name="correo" placeholder="ejemplo@sena.edu.co" required>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 12px;">Cancelar</button>
+                        <button type="submit" class="btn btn-action-custom">Guardar Ficha</button>
                     </div>
-                    <div class="mb-3">
-                        <label for="contrasena" class="form-label fw-semibold small">Contraseña</label>
-                        <input type="password" class="form-control" id="contrasena" name="contrasena" placeholder="••••••••" required>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light border-0 rounded-bottom-4">
-                    <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success rounded-3 fw-bold">Guardar Instructor</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="modal fade" id="modalInstructor" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill me-2" style="color: var(--accent-orange);"></i>Nuevo Instructor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="index.php?action=crear_instructor" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Documento / Identificación</label>
+                            <input type="text" class="form-control form-control-lg fs-6" name="documento" required style="border-radius: 12px;">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small text-muted">Nombre</label>
+                                <input type="text" class="form-control form-control-lg fs-6" name="nombre" required style="border-radius: 12px;">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small text-muted">Apellido</label>
+                                <input type="text" class="form-control form-control-lg fs-6" name="apellido" required style="border-radius: 12px;">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Nombre de Usuario / Correo</label>
+                            <input type="text" class="form-control form-control-lg fs-6" name="correo" required style="border-radius: 12px;">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Contraseña</label>
+                            <input type="password" class="form-control form-control-lg fs-6" name="contrasena" required style="border-radius: 12px;">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 12px;">Cancelar</button>
+                        <button type="submit" class="btn btn-action-orange">Guardar Instructor</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
