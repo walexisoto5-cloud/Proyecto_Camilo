@@ -1,0 +1,16 @@
+/* Estilos específicos para la barra lateral y tarjetas */
+
+/* Ancho fijo para la barra lateral en pantallas grandes */
+.sidebar-nav {
+    width: 80px;
+}
+
+/* Transición para los botones de navegación de la barra lateral */
+.sidebar-nav .nav-link {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Efecto hover sobre los íconos del menú */
+.sidebar-nav .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}

@@ -1,61 +1,60 @@
 <?php
-session_start();
+require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Usuario.php';
 
 class AuthController {
-    private $usuarioModel;
-
-    public function __construct() {
-        $this->usuarioModel = new Usuario();
-    }
-
+    
     public function login() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $identificador = trim($_POST['identificador'] ?? '');
-            $password = $_POST['password'] ?? '';
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
-            // validar campos vacios
-            if (empty($identificador) || empty($password)) {
-                $_SESSION['error'] = "Por favor, ingrese su documento/correo y contraseña.";
-                header("Location: index.php?action=login");
-                exit();
+        // Si ya hay sesión activa, redirigir al dashboard
+        if (isset($_SESSION['usuario_id'])) {
+            header("Location: index.php?action=dashboard");
+            exit();
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $nombre_usuario = trim($_POST['nombre_usuario'] ?? '');
+            $contrasena = trim($_POST['contrasena'] ?? '');
+
+            if (empty($nombre_usuario) || empty($contrasena)) {
+                $error = "Por favor ingrese usuario y contraseña.";
+                require_once __DIR__ . '/../views/auth/login.php';
+                return;
             }
 
-            // Consultar datos del usuario
-            $user = $this->usuarioModel->obtenerPorIdentificador($identificador);
+            $database = new Database();
+            $db = $database->getConnection();
+            $usuarioModel = new Usuario($db);
 
-            if ($user && password_verify($password, $user['password_hash'])) {
-                if ($user['estado'] !== 'activo') {
-                    $_SESSION['error'] = "Su cuenta se encuentra inactiva.";
-                    header("Location: index.php?action=login");
-                    exit();
-                }
+            $usuario = $usuarioModel->obtenerPorUsuario($nombre_usuario);
 
-                session_regenerate_id(true);
+            if ($usuario && (password_verify($contrasena, $usuario['contrasena']) || $contrasena === $usuario['contrasena'])) {
+                $_SESSION['usuario_id'] = $usuario['id_usuario'];
+                $_SESSION['nombre_completo'] = $usuario['nombre'] . ' ' . $usuario['apellido'];
+                $_SESSION['nombre_usuario'] = $usuario['nombre_usuario'];
+                $_SESSION['rol'] = $usuario['nombre_rol'];
 
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['rol'] = $user['rol'];
-                $_SESSION['logged_in'] = true;
-
-                // Redireccionar segun el rol del usuario
-                if ($user['rol'] === 'Administrador' || $user['rol'] === 'Instructor') {
-                    header("Location: index.php?action=admin_dashboard");
-                } else {
-                    header("Location: index.php?action=aprendiz_dashboard");
-                }
+                header("Location: index.php?action=dashboard");
                 exit();
             } else {
-                $_SESSION['error'] = "Credenciales incorrectas.";
-                header("Location: index.php?action=login");
-                exit();
+                $error = "Usuario o contraseña incorrectos.";
+                require_once __DIR__ . '/../views/auth/login.php';
             }
+        } else {
+            require_once __DIR__ . '/../views/auth/login.php';
         }
     }
 
     public function logout() {
-        session_unset();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         session_destroy();
         header("Location: index.php?action=login");
         exit();
     }
 }
+?>

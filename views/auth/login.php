@@ -54,7 +54,7 @@
                 <?php endif; ?>
 
                 
-                <form action="index.php?action=do_login" method="POST" autocomplete="off">
+                <form action="../../index.php?action=login" method="POST">
                     
                     <div class="mb-3">
                         <label for="identificador" class="form-label text-secondary small fw-bold">Documento o Correo</label>
