@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,8 +9,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- Estilos Personalizados del Dashboard -->
-    <link rel="stylesheet" href="public/css/dashboard.css">
+    <link rel="stylesheet" href="/proyecto_Camilo_Asistencia/public/css/dashboard.css">
 </head>
+
 <body>
 
     <div class="dashboard-container">
@@ -28,6 +30,10 @@
                 </a>
                 <a href="#" class="nav-item-btn" data-bs-toggle="modal" data-bs-target="#modalInstructor" title="Nuevo Instructor">
                     <i class="bi bi-person-plus-fill fs-5"></i>
+                </a>
+                <!-- Nuevo Botón para Subir Excusa con el ícono en blanco -->
+                <a href="#" class="nav-item-btn" data-bs-toggle="modal" data-bs-target="#modalExcusas" title="Subir Excusa">
+                    <i class="bi bi-file-earmark-arrow-up-fill fs-5 text-white"></i>
                 </a>
                 <a href="index.php?action=logout" class="nav-item-btn mt-auto" title="Cerrar Sesión">
                     <i class="bi bi-box-arrow-right fs-5"></i>
@@ -63,7 +69,7 @@
                 </div>
             <?php endif; ?>
 
-            <!-- KPIs -->
+            <!-- KPIs (Datos Reales Conectados) -->
             <div class="row g-3">
                 <div class="col-6 col-md-3">
                     <div class="dashboard-card stat-card">
@@ -126,18 +132,18 @@
                         <tbody>
                             <?php if (!empty($ultimosMarcajes) && is_array($ultimosMarcajes)): ?>
                                 <?php foreach ($ultimosMarcajes as $registro): ?>
-                                    <?php 
-                                        $nombreReg = (string)($registro['nombre'] ?? 'Sin Nombre');
-                                        $apellidoReg = (string)($registro['apellido'] ?? '');
-                                        $fechaReg = (string)($registro['fecha_asistencia'] ?? '-');
-                                        $entradaReg = (string)($registro['entrada'] ?? '-');
-                                        $estadoReg = (string)($registro['estado_entrada'] ?? 'N/A');
-                                        $salidaReg = (string)($registro['salida'] ?? '-');
+                                    <?php
+                                    $nombreReg = (string)($registro['nombre'] ?? 'Sin Nombre');
+                                    $apellidoReg = (string)($registro['apellido'] ?? '');
+                                    $fechaReg = (string)($registro['fecha_asistencia'] ?? '-');
+                                    $entradaReg = (string)($registro['entrada'] ?? '-');
+                                    $estadoReg = (string)($registro['estado_entrada'] ?? 'N/A');
+                                    $salidaReg = (string)($registro['salida'] ?? '-');
 
-                                        $estadoLower = strtolower($estadoReg);
-                                        $badgeStyle = ($estadoLower === 'a tiempo' || $estadoLower === 'asistió') 
-                                            ? 'background: #e8f8ec; color: #1e7e34;' 
-                                            : (($estadoLower === 'retardo') ? 'background: #fff8e6; color: #b78103;' : 'background: #f0f0f5; color: #6c757d;');
+                                    $estadoLower = strtolower($estadoReg);
+                                    $badgeStyle = ($estadoLower === 'a tiempo' || $estadoLower === 'asistió')
+                                        ? 'background: #e8f8ec; color: #1e7e34;'
+                                        : (($estadoLower === 'retardo') ? 'background: #fff8e6; color: #b78103;' : 'background: #f0f0f5; color: #6c757d;');
                                     ?>
                                     <tr>
                                         <td class="fw-semibold text-dark">
@@ -194,6 +200,8 @@
     </div>
 
     <!-- Modales -->
+
+    <!-- Modal Nueva Ficha -->
     <div class="modal fade" id="modalFicha" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
@@ -221,6 +229,7 @@
         </div>
     </div>
 
+    <!-- Modal Nuevo Instructor -->
     <div class="modal fade" id="modalInstructor" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
@@ -262,6 +271,46 @@
         </div>
     </div>
 
+    <!-- Modal Subir Excusa -->
+<div class="modal fade" id="modalExcusas" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-file-earmark-arrow-up me-2" style="color: var(--sidebar-purple);"></i>Registrar Excusa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <!-- El action apunta directo a la acción del controlador y el enctype es obligatorio para archivos -->
+            <form action="index.php?action=guardar_excusa" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Documento del Aprendiz</label>
+                        <input type="text" class="form-control form-control-lg fs-6" name="documento_aprendiz" placeholder="Número de documento" required style="border-radius: 12px;">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Fecha de la Falta / Incapacidad</label>
+                        <input type="date" class="form-control form-control-lg fs-6" name="fecha_falta" required style="border-radius: 12px;">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Motivo / Observación</label>
+                        <textarea class="form-control fs-6" name="motivo" rows="3" placeholder="Describe brevemente el motivo..." required style="border-radius: 12px;"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Adjuntar Evidencia (PDF o Imagen)</label>
+                        <input type="file" class="form-control form-control-lg fs-6" name="archivo_excusa" accept=".pdf, .jpg, .jpeg, .png" required style="border-radius: 12px;">
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 12px;">Cancelar</button>
+                    <button type="submit" class="btn btn-action-custom">Subir Excusa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
