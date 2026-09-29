@@ -1,33 +1,44 @@
 <?php
-// Activar errores temporalmente para depurar si algo falla
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesión de forma segura
+// Iniciar sesion de forma segura
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Obtener la acción solicitada por la URL (por defecto carga 'dashboard')
 $action = $_GET['action'] ?? 'dashboard';
 
 switch ($action) {
     case 'dashboard':
-        // 1. Recuperar el nombre y rol del usuario de la sesión (o mostrar 'Administrador' por defecto)
-        $nombreUsuario = $_SESSION['nombre'] ?? $_SESSION['user'] ?? 'Administrador';
-        $rolUsuario = $_SESSION['rol'] ?? 'Administrador';
+        require_once 'config/database.php';
+        require_once 'models/Dashboard.php';
+        require_once 'controllers/DashboardController.php';
 
-        // 2. Incluir la vista del dashboard ubicada en la carpeta views/auth/
-        if (file_exists('views/auth/dashboard.php')) {
-            include 'views/auth/dashboard.php';
-        } else {
-            echo "<h3 style='color:red; text-align:center; margin-top:50px;'>Error crítico: No se encontró el archivo views/auth/dashboard.php.</h3>";
-        }
+        $database = new Database();
+        $db = $database->getConnection();
+        
+        $controller = new DashboardController();
+        
+        $controller->index(); 
+        break;
+
+
+    case 'crear_ficha':
+        require_once 'controllers/DashboardController.php';
+        $controller = new DashboardController();
+        $controller->crearFicha();
+        break;
+
+    case 'crear_instructor':
+        require_once 'controllers/DashboardController.php';
+        $controller = new DashboardController();
+        $controller->crearInstructor();
         break;
 
     case 'guardar_excusa':
-        // Procesar los datos cuando se envía el formulario del modal
+        // Procesar los datos cuando se envia el formulario del modal
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $documentoAprendiz = $_POST['documento_aprendiz'] ?? '';
             $fechaFalta = $_POST['fecha_falta'] ?? '';
@@ -49,24 +60,23 @@ switch ($action) {
                         mkdir($uploadFileDir, 0755, true);
                     }
                     
-                    // Generar un nombre único para el archivo
+                    // Generar un nombre unico para el archivo
                     $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
                     $dest_path = $uploadFileDir . $newFileName;
                     
                     if (move_uploaded_file($fileTmpPath, $dest_path)) {
-                        // TODO: Aquí debes agregar tu consulta SQL (INSERT INTO excusas...) para guardarlo en la base de datos
                     }
                 }
             }
 
-            // REDIRECCIÓN OBLIGATORIA: Limpia la URL y regresa al dashboard sin dejar rastro de la acción
+
             header("Location: index.php?action=dashboard");
             exit();
         }
         break;
 
     case 'logout':
-        // Limpiar la sesión por completo y regresar al login físico
+        // limpiar la sesion por completo y regresar al login fisico
         $_SESSION = array();
         if (ini_get("session.use_cookies")) {
             $params = session_get_cookie_params();
@@ -77,14 +87,15 @@ switch ($action) {
         }
         session_destroy();
         
-        // Redirección directa al archivo login.php dentro de views/auth/
+        // Redirección directa al archivo login.php
         header("Location: views/auth/login.php");
         exit();
         break;
 
     default:
-        // Si escriben una acción inválida, redirigir al dashboard por seguridad
+        // Si escriben una acción invalida redirigir al dashboard por seguridad
         header("Location: index.php?action=dashboard");
         exit();
         break;
 }
+?>

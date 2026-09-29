@@ -1,32 +1,60 @@
-public function dashboard() {
-    // Asumiendo que usas PDO para conectar a la base de datos ($this->db)
-    
-    // 1. Total de aprendices inscritos
-    $stmtTotal = $this->db->prepare("SELECT COUNT(*) as total FROM aprendices");
-    $stmtTotal->execute();
-    $totalAprendices = $stmtTotal->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
+<?php
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../models/Dashboard.php';
 
-    // 2. Asistencias de hoy (fecha actual)
-    $hoy = date('Y-m-d');
-    $stmtAsistencias = $this->db->prepare("SELECT COUNT(*) as total FROM ingresos WHERE fecha = ? AND estado = 'A tiempo'");
-    $stmtAsistencias->execute([$hoy]);
-    $asistenciasHoy = $stmtAsistencias->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
+class AdminController {
+    private $conn;
 
-    // 3. Retardos de hoy
-    $stmtRetardos = $this->db->prepare("SELECT COUNT(*) as total FROM ingresos WHERE fecha = ? AND estado = 'Retardo'");
-    $stmtRetardos->execute([$hoy]);
-    $retardosHoy = $stmtRetardos->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
+    public function __construct($db) {
+        $this->conn = $db;
+    }
 
-    // 4. Excusas pendientes de aprobación
-    $stmtExcusas = $this->db->prepare("SELECT COUNT(*) as total FROM excusas WHERE estado = 'Pendiente'");
-    $stmtExcusas->execute();
-    $excusasPendientes = $stmtExcusas->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
+    public function dashboard() {
+        // Asegurar que la sesión esté iniciada
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
-    // 5. Últimos marcajes para la tabla inferior
-    $stmtTabla = $this->db->prepare("SELECT a.nombre_aprendiz, i.fecha, i.entrada, i.estado, i.salida FROM ingresos i JOIN aprendices a ON i.id_aprendiz = a.id ORDER BY i.id DESC LIMIT 5");
-    $stmtTabla->execute();
-    $ultimosMarcajes = $stmtTabla->fetchAll(PDO::FETCH_ASSOC);
+        //total de aprendices inscritos
+        $sqlAprendices = "SELECT COUNT(*) as total FROM aprendiz";
+        $resultAprendices = $this->conn->query($sqlAprendices);
+        $totalAprendices = $resultAprendices ? $resultAprendices->fetch_assoc()['total'] : 0;
 
-    // Pasamos todas estas variables a tu vista del dashboard
-    include_once __DIR__ . '/../Views/auth/dashboard.php';
+        //asistencias de hoy
+        $sqlAsistencias = "SELECT COUNT(*) as total FROM asistencia WHERE fecha_asistencia = CURDATE()";
+        $resultAsistencias = $this->conn->query($sqlAsistencias);
+        $asistenciasHoy = $resultAsistencias ? $resultAsistencias->fetch_assoc()['total'] : 0;
+
+        //retardos de hoy
+        $sqlRetardos = "SELECT COUNT(*) as total FROM asistencia WHERE fecha_asistencia = CURDATE() AND estado_entrada = 'retardo'";
+        $resultRetardos = $this->conn->query($sqlRetardos);
+        $retardosHoy = $resultRetardos ? $resultRetardos->fetch_assoc()['total'] : 0;
+
+        //excusas pendientes de aprobación
+        $sqlExcusas = "SELECT COUNT(*) as total FROM excusa WHERE estado = 'Pendiente'";
+        $resultExcusas = $this->conn->query($sqlExcusas);
+        $excusasPendientes = $resultExcusas ? $resultExcusas->fetch_assoc()['total'] : 0;
+
+        //ultimos marcajes para la tabla inferior
+        $sqlTabla = "SELECT a.*, u.nombre, u.apellido 
+                     FROM asistencia a 
+                     INNER JOIN aprendiz ap ON a.fk_aprendiz = ap.id_aprendiz 
+                     INNER JOIN usuario u ON ap.fk_usuario = u.id_usuario 
+                     ORDER BY a.fecha_asistencia DESC, a.entrada DESC LIMIT 5";
+        $resultTabla = $this->conn->query($sqlTabla);
+        $ultimosMarcajes = $resultTabla ? $resultTabla->fetch_all(MYSQLI_ASSOC) : [];
+
+        //datos del usuario logueado para la vista
+        $nombreUsuario = $_SESSION['nombre'] ?? $_SESSION['user'] ?? 'Administrador';
+        $rolUsuario = $_SESSION['rol'] ?? 'Administrador';
+
+        //dashboard
+        $rutaVista = __DIR__ . '/../views/auth/dashboard.php';
+        if (file_exists($rutaVista)) {
+            require_once $rutaVista;
+        } else {
+            echo "<h3 style='color:red; text-align:center;'>Error: No se encontró la vista del dashboard.</h3>";
+        }
+    }
 }
+?>

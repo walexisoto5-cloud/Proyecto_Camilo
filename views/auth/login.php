@@ -57,7 +57,7 @@
                     </div>
                 <?php endif; ?>
 
-                <!-- Formulario -->
+                <!-- formulario -->
                 <form action="/proyecto_Camilo_Asistencia/index.php?action=login" method="POST">
 
                     <div class="mb-3">

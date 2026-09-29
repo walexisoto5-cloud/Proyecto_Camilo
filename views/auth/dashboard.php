@@ -69,14 +69,14 @@
                 </div>
             <?php endif; ?>
 
-            <!-- KPIs (Datos Reales Conectados) -->
+            <!--datos conectados -->
             <div class="row g-3">
                 <div class="col-6 col-md-3">
                     <div class="dashboard-card stat-card">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="stat-icon"><i class="bi bi-people"></i></div>
                         </div>
-                        <h3 class="fw-bold mb-1"><?= (int)($totalAprendices ?? 0); ?></h3>
+                        <h2><?php echo $totalAprendices ?? 0; ?></h2>
                         <span class="text-muted small fw-semibold">Aprendices</span>
                     </div>
                 </div>
@@ -86,8 +86,18 @@
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="stat-icon" style="color: #28a745; background: #e8f8ec;"><i class="bi bi-check-circle"></i></div>
                         </div>
-                        <h3 class="fw-bold mb-1"><?= (int)($asistenciasHoy ?? 0); ?></h3>
+                        <h2><?php echo $asistenciasHoy ?? 0; ?></h2>
                         <span class="text-muted small fw-semibold">Asistencias Hoy</span>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <div class="dashboard-card stat-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="stat-icon" style="color: #28a745; background: #e8f8ec;"><i class="bi bi-check-circle"></i></div>
+                        </div>
+                        <h2><?php echo $totalFichas ?? 0; ?></h2>
+                        <span class="text-muted small fw-semibold">numero de fichas</span>
                     </div>
                 </div>
 
@@ -96,7 +106,7 @@
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="stat-icon" style="color: #ffc107; background: #fffbf0;"><i class="bi bi-clock-history"></i></div>
                         </div>
-                        <h3 class="fw-bold mb-1"><?= (int)($retardosHoy ?? 0); ?></h3>
+                        <h2><?php echo $retardosHoy ?? 0; ?></h2>
                         <span class="text-muted small fw-semibold">Retardos Hoy</span>
                     </div>
                 </div>
@@ -106,13 +116,13 @@
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="stat-icon" style="color: #dc3545; background: #fdeef0;"><i class="bi bi-file-earmark-text"></i></div>
                         </div>
-                        <h3 class="fw-bold mb-1"><?= (int)($excusasPendientes ?? 0); ?></h3>
+                        
                         <span class="text-muted small fw-semibold">Excusas Pend.</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Tabla Últimos Marcajes -->
+            <!-- Tabla ultimos Marcajes -->
             <div class="dashboard-card mt-2">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="fw-bold mb-0">Últimos Marcajes</h5>
@@ -190,16 +200,8 @@
                     </div>
                 </div>
             </div>
-
-            <div class="dashboard-card p-3" style="background: linear-gradient(135deg, var(--sidebar-purple) 0%, var(--sidebar-dark) 100%); color: white;">
-                <h6 class="fw-bold mb-2"><i class="bi bi-shield-check me-2"></i>Estado del Sistema</h6>
-                <p class="small mb-0 text-white-50">Conexión a base de datos activa y sincronizada.</p>
-            </div>
         </aside>
-
     </div>
-
-    <!-- Modales -->
 
     <!-- Modal Nueva Ficha -->
     <div class="modal fade" id="modalFicha" tabindex="-1" aria-hidden="true">
@@ -229,7 +231,7 @@
         </div>
     </div>
 
-    <!-- Modal Nuevo Instructor -->
+    <!-- modal nuevo instructor -->
     <div class="modal fade" id="modalInstructor" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
@@ -271,7 +273,7 @@
         </div>
     </div>
 
-    <!-- Modal Subir Excusa -->
+    <!-- modal subir excusa -->
 <div class="modal fade" id="modalExcusas" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
@@ -281,7 +283,6 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <!-- El action apunta directo a la acción del controlador y el enctype es obligatorio para archivos -->
             <form action="index.php?action=guardar_excusa" method="POST" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="mb-3">

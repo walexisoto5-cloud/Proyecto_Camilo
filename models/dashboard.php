@@ -93,5 +93,12 @@ class Dashboard
         $stmt->bind_param("sssss", $identificacion, $nombre, $apellido, $correo, $hash);
         return $stmt->execute();
     }
+
+    public function obtenerTotalFichas() {
+    $sql = "SELECT COUNT(*) as total FROM ficha";
+    $result = $this->conn->query($sql);
+    $row = $result->fetch_assoc();
+    return $row['total'] ?? 0;
+}
 }
 ?>

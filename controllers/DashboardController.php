@@ -4,6 +4,7 @@ require_once __DIR__ . '/../models/Dashboard.php';
 
 class DashboardController {
 
+    // Cargar datos y mostrar la vista principal del Dashboard
     public function index() {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -13,88 +14,59 @@ class DashboardController {
         $db = $database->getConnection();
         $dashboardModel = new Dashboard($db);
 
+        
         $totalAprendices = $dashboardModel->obtenerTotalAprendices();
         $asistenciasHoy = $dashboardModel->obtenerAsistenciasHoy();
         $retardosHoy = $dashboardModel->obtenerRetardosHoy();
         $excusasPendientes = $dashboardModel->obtenerExcusasPendientes();
         $ultimosMarcajes = $dashboardModel->obtenerUltimasAsistencias(5);
+        $totalFichas = $dashboardModel->obtenerTotalFichas();
 
-        $nombreUsuario = $_SESSION['nombre_completo'] ?? 'Usuario Sistema';
+        
+        $nombreUsuario = $_SESSION['nombre_completo'] ?? $_SESSION['user'] ?? 'Administrador';
         $rolUsuario = $_SESSION['rol'] ?? 'Administrador';
 
-        $mensaje = $_SESSION['mensaje'] ?? null;
-        $tipoMensaje = $_SESSION['tipo_mensaje'] ?? null;
-        unset($_SESSION['mensaje'], $_SESSION['tipo_mensaje']);
-
+        
         require_once __DIR__ . '/../views/auth/dashboard.php';
     }
 
+    //Guardar nueva ficha desde el modal
     public function crearFicha() {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $numeroFicha = trim($_POST['numero_ficha'] ?? '');
-            $programaFormacion = trim($_POST['programa_formacion'] ?? '');
+            $numeroFicha = $_POST['numero_ficha'] ?? '';
+            $programa = $_POST['programa_formacion'] ?? '';
 
-            if (!empty($numeroFicha) && !empty($programaFormacion)) {
+            if (!empty($numeroFicha) && !empty($programa)) {
                 $database = new Database();
                 $db = $database->getConnection();
                 $dashboardModel = new Dashboard($db);
 
-                $resultado = $dashboardModel->crearFicha($numeroFicha, $programaFormacion);
-
-                if ($resultado) {
-                    $_SESSION['mensaje'] = "Ficha registrada correctamente.";
-                    $_SESSION['tipo_mensaje'] = "success";
-                } else {
-                    $_SESSION['mensaje'] = "Error al guardar la ficha en la base de datos.";
-                    $_SESSION['tipo_mensaje'] = "danger";
-                }
-            } else {
-                $_SESSION['mensaje'] = "Por favor completa todos los campos de la ficha.";
-                $_SESSION['tipo_mensaje'] = "warning";
+                $dashboardModel->crearFicha($numeroFicha, $programa);
             }
         }
-
         header("Location: index.php?action=dashboard");
         exit();
     }
 
+    //Guardar nuevo instructor desde el modal
     public function crearInstructor() {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $documento = trim($_POST['documento'] ?? '');
-            $nombre = trim($_POST['nombre'] ?? '');
-            $apellido = trim($_POST['apellido'] ?? '');
-            $correo = trim($_POST['correo'] ?? '');
-            $contrasena = trim($_POST['contrasena'] ?? '');
+            $documento = $_POST['documento'] ?? '';
+            $nombre = $_POST['nombre'] ?? '';
+            $apellido = $_POST['apellido'] ?? '';
+            $correo = $_POST['correo'] ?? '';
+            $contrasena = $_POST['contrasena'] ?? '';
 
             if (!empty($documento) && !empty($nombre) && !empty($apellido) && !empty($correo) && !empty($contrasena)) {
                 $database = new Database();
                 $db = $database->getConnection();
                 $dashboardModel = new Dashboard($db);
 
-                $resultado = $dashboardModel->crearInstructor($documento, $nombre, $apellido, $correo, $contrasena);
-
-                if ($resultado) {
-                    $_SESSION['mensaje'] = "Instructor registrado correctamente.";
-                    $_SESSION['tipo_mensaje'] = "success";
-                } else {
-                    $_SESSION['mensaje'] = "Error al registrar el instructor en la base de datos.";
-                    $_SESSION['tipo_mensaje'] = "danger";
-                }
-            } else {
-                $_SESSION['mensaje'] = "Por favor completa todos los campos del instructor.";
-                $_SESSION['tipo_mensaje'] = "warning";
+                $dashboardModel->crearInstructor($documento, $nombre, $apellido, $correo, $contrasena);
             }
         }
-
         header("Location: index.php?action=dashboard");
         exit();
     }
 }
+?>

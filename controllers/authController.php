@@ -9,7 +9,7 @@ class AuthController {
             session_start();
         }
 
-        // Si ya hay sesión activa, redirigir al dashboard
+        // Si ya hay sesion activa, redirigir al dashboard
         if (isset($_SESSION['usuario_id'])) {
             header("Location: index.php?action=dashboard");
             exit();
