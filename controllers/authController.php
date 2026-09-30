@@ -31,7 +31,8 @@ class AuthController {
 
             $usuario = $usuarioModel->obtenerPorUsuario($nombre_usuario);
 
-            if ($usuario && (password_verify($contrasena, $usuario['contrasena']) || $contrasena === $usuario['contrasena'])) {
+            // Validacion estrictamente segura con password_verify
+            if ($usuario && password_verify($contrasena, $usuario['contrasena'])) {
                 $_SESSION['usuario_id'] = $usuario['id_usuario'];
                 $_SESSION['nombre_completo'] = $usuario['nombre'] . ' ' . $usuario['apellido'];
                 $_SESSION['nombre_usuario'] = $usuario['nombre_usuario'];
@@ -55,6 +56,20 @@ class AuthController {
         session_destroy();
         header("Location: index.php?action=login");
         exit();
+    }
+
+    public function mostrarEscaner() {
+        // Asegurar que solo administradores o instructores accedan
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        if (!isset($_SESSION['usuario_id'])) {
+            header("Location: index.php?action=login");
+            exit();
+        }
+
+        // Cargamos la vista del escáner que respeta el layout del panel
+        require_once __DIR__ . '/../views/asistencia/escaner_panel.php';
     }
 }
 ?>

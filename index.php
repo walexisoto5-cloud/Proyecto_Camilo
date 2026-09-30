@@ -11,7 +11,12 @@ if (session_status() === PHP_SESSION_NONE) {
 $action = $_GET['action'] ?? 'dashboard';
 
 switch ($action) {
-    case 'dashboard':
+   case 'dashboard':
+        if (empty($_SESSION['usuario_id'])) {
+            header("Location: index.php?action=login");
+            exit();
+        }
+
         require_once 'config/database.php';
         require_once 'models/Dashboard.php';
         require_once 'controllers/DashboardController.php';
@@ -20,8 +25,13 @@ switch ($action) {
         $db = $database->getConnection();
         
         $controller = new DashboardController();
-        
         $controller->index(); 
+        break;
+
+        case 'login':
+        require_once 'controllers/AuthController.php';
+        $controller = new AuthController();
+        $controller->login();
         break;
 
 
@@ -37,14 +47,30 @@ switch ($action) {
         $controller->crearInstructor();
         break;
 
+        case 'escaner_rfid':
+        // Verificar sesión activa
+        if (empty($_SESSION['usuario_id'])) {
+            header("Location: index.php?action=login");
+            exit();
+        }
+        require_once 'controllers/DashboardController.php';
+        $controller = new DashboardController();
+        $controller->mostrarEscaner();
+        break;
+
+    case 'procesar_rfid':
+        require_once 'controllers/DashboardController.php';
+        $controller = new DashboardController();
+        $controller->procesarRfId();
+        break;
+
     case 'guardar_excusa':
-        // Procesar los datos cuando se envia el formulario del modal
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $documentoAprendiz = $_POST['documento_aprendiz'] ?? '';
             $fechaFalta = $_POST['fecha_falta'] ?? '';
             $motivo = $_POST['motivo'] ?? '';
-            
-            // Validar y mover el archivo adjunto
+        
             if (isset($_FILES['archivo_excusa']) && $_FILES['archivo_excusa']['error'] === UPLOAD_ERR_OK) {
                 $fileTmpPath = $_FILES['archivo_excusa']['tmp_name'];
                 $fileName = $_FILES['archivo_excusa']['name'];
@@ -55,7 +81,6 @@ switch ($action) {
                 if (in_array($fileExtension, $allowedExtensions)) {
                     $uploadFileDir = 'public/uploads/excusas/';
                     
-                    // Crear la carpeta de subidas si no existe
                     if (!is_dir($uploadFileDir)) {
                         mkdir($uploadFileDir, 0755, true);
                     }
@@ -87,15 +112,15 @@ switch ($action) {
         }
         session_destroy();
         
-        // Redirección directa al archivo login.php
         header("Location: views/auth/login.php");
         exit();
         break;
 
     default:
-        // Si escriben una acción invalida redirigir al dashboard por seguridad
         header("Location: index.php?action=dashboard");
         exit();
         break;
+
+        
 }
 ?>

@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -55,6 +57,7 @@
                         <?= htmlspecialchars($error); ?>
                         <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
+                    
                 <?php endif; ?>
 
                 <!-- formulario -->
