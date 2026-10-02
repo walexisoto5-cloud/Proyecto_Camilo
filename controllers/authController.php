@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/Usuario.php';
 
 class AuthController {
@@ -53,23 +53,25 @@ class AuthController {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+         
+    
+        $_SESSION = array();
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params["path"],
+                $params["domain"],
+                $params["secure"],
+                $params["httponly"]
+            );
+        }
         session_destroy();
+
         header("Location: index.php?action=login");
         exit();
-    }
-
-    public function mostrarEscaner() {
-        // Asegurar que solo administradores o instructores accedan
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-        if (!isset($_SESSION['usuario_id'])) {
-            header("Location: index.php?action=login");
-            exit();
-        }
-
-        // Cargamos la vista del escáner que respeta el layout del panel
-        require_once __DIR__ . '/../views/asistencia/escaner_panel.php';
     }
 }
 ?>

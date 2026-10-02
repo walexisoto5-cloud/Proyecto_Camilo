@@ -7,14 +7,15 @@ class Asistencia {
     }
 
     public function registrarAccesoPorRfId($codigo_rfid) {
-        // 1. Buscar al aprendiz por su código RFID y obtener su ficha/horario
-        $sql = "SELECT u.id_usuario, u.nombre, u.apellido, f.hora_inicio, f.hora_fin 
-                FROM usuario u 
-                LEFT JOIN ficha f ON u.fk_ficha = f.id_ficha 
-                WHERE u.codigo_rfid = ?";
+        // 1. Buscar al aprendiz por su código RFID vinculando aprendiz y usuario
+        $sql = "SELECT ap.id_aprendiz, u.id_usuario, u.nombre, u.apellido, ap.fk_ficha 
+                FROM aprendiz ap 
+                INNER JOIN usuario u ON ap.fk_usuario = u.id_usuario 
+                WHERE ap.codigo_rfid = ? OR u.identificacion = ? 
+                LIMIT 1";
         
         $stmt = $this->db->prepare($sql);
-        $stmt->bind_param("s", $codigo_rfid);
+        $stmt->bind_param("ss", $codigo_rfid, $codigo_rfid);
         $stmt->execute();
         $resultado = $stmt->get_result();
 
@@ -23,64 +24,54 @@ class Asistencia {
         }
 
         $aprendiz = $resultado->fetch_assoc();
-        $id_usuario = $aprendiz['id_usuario'];
+        $id_aprendiz = (int)$aprendiz['id_aprendiz'];
+        $id_usuario = (int)$aprendiz['id_usuario'];
+        $nombreCompleto = trim($aprendiz['nombre'] . ' ' . $aprendiz['apellido']);
         $hoy = date('Y-m-d');
         $hora_actual = date('H:i:s');
+        $ahora_datetime = date('Y-m-d H:i:s');
 
         // 2. Verificar si ya tiene un registro de asistencia para el día de hoy
-        $sql_check = "SELECT * FROM ingresos WHERE id_usuario = ? AND fecha = ?";
+        $sql_check = "SELECT * FROM asistencia WHERE fk_aprendiz = ? AND fecha_asistencia = ? LIMIT 1";
         $stmt_check = $this->db->prepare($sql_check);
-        $stmt_check->bind_param("is", $id_usuario, $hoy);
+        $stmt_check->bind_param("is", $id_aprendiz, $hoy);
         $stmt_check->execute();
         $asistencia_hoy = $stmt_check->get_result()->fetch_assoc();
 
         if (!$asistencia_hoy) {
             // --- REGISTRAR ENTRADA ---
             $estado = "A tiempo";
-            // Validar retardo comparando con la hora de inicio de la ficha (ej. con 10 min de tolerancia)
-            if ($horario_inicio = $aprendiz['hora_inicio']) {
-                // Si la hora actual es mayor a la hora de entrada + tolerancia, se marca Retardo
-                $tolerancia_minutos = 10;
-                $hora_limite = date('H:i:s', strtotime($horario_inicio . " + $tolerancia_minutos minutes"));
-                
-                if ($hora_actual > $hora_limite) {
-                    $estado = "Retardo";
-                }
+            if ($hora_actual > '08:15:00') {
+                $estado = "Retardo";
             }
 
-            $sql_insert = "INSERT INTO ingresos (id_usuario, fecha, hora_entrada, estado) VALUES (?, ?, ?, ?)";
+            $sql_insert = "INSERT INTO asistencia (fecha_asistencia, entrada, estado_entrada, fk_aprendiz) VALUES (?, ?, ?, ?)";
             $stmt_insert = $this->db->prepare($sql_insert);
-            $stmt_insert->bind_param("isss", $id_usuario, $hoy, $hora_actual, $estado);
+            $stmt_insert->bind_param("sssi", $hoy, $ahora_datetime, $estado, $id_aprendiz);
             $stmt_insert->execute();
 
             return [
                 "status" => "success", 
                 "tipo" => "entrada",
-                "mensaje" => "¡Bienvenido, " . $aprendiz['nombre'] . "! Entrada registrada a las " . $hora_actual . ($estado == 'Retardo' ? ' (CON RETARDO)' : '')
+                "mensaje" => "¡Bienvenido, " . $nombreCompleto . "! Entrada registrada a las " . date('h:i A') . ($estado == 'Retardo' ? ' (CON RETARDO)' : '')
             ];
 
-        } else if ($asistencia_hoy && empty($asistencia_hoy['hora_salida'])) {
+        } else if ($asistencia_hoy && (empty($asistencia_hoy['salida']) || $asistencia_hoy['salida'] === '0000-00-00 00:00:00')) {
             // --- REGISTRAR SALIDA ---
-            // Validar salida temprana si es necesario
-            $estado = $asistencia_hoy['estado']; // Mantiene el estado si ya traía retardo
-            $hora_fin_ficha = $aprendiz['hora_fin'] ?? '18:00:00';
+            $estado_salida = "Salida normal";
 
-            if ($hora_actual < $hora_fin_ficha) {
-                $estado = "Salida temprana";
-            }
-
-            $sql_update = "UPDATE ingresos SET hora_salida = ?, estado = ? WHERE id_ingreso = ?";
+            $sql_update = "UPDATE asistencia SET salida = ?, estado_salida = ? WHERE id_asistencia = ?";
             $stmt_update = $this->db->prepare($sql_update);
-            $stmt_update->bind_param("ssi", $hora_actual, $estado, $asistencia_hoy['id_ingreso']);
+            $stmt_update->bind_param("ssi", $ahora_datetime, $estado_salida, $asistencia_hoy['id_asistencia']);
             $stmt_update->execute();
 
             return [
                 "status" => "success", 
                 "tipo" => "salida",
-                "mensaje" => "¡Hasta luego, " . $aprendiz['nombre'] . "! Salida registrada a las " . $hora_actual
+                "mensaje" => "¡Hasta luego, " . $nombreCompleto . "! Salida registrada a las " . date('h:i A')
             ];
         } else {
-            return ["status" => "warning", "mensaje" => "El aprendiz ya registró su entrada y salida el día de hoy."];
+            return ["status" => "warning", "mensaje" => $nombreCompleto . " ya registró su entrada y salida el día de hoy."];
         }
     }
 }

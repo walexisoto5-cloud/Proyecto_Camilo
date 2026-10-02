@@ -1,3 +1,8 @@
+<?php
+// Las fichas y variables son proporcionadas directamente por DashboardController
+$fichas = $fichas ?? [];
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -9,7 +14,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- Estilos Personalizados del Dashboard -->
-    <link rel="stylesheet" href="/proyecto_Camilo_Asistencia/public/css/dashboard.css">
+    <link rel="stylesheet" href="public/css/dashboard.css">
 </head>
 
 <body>
@@ -43,10 +48,6 @@
                 <a href="index.php?action=escaner_rfid" class="nav-link text-center text-white p-2 <?php echo (isset($_GET['action']) && $_GET['action'] === 'escaner_rfid') ? 'active bg-dark rounded' : ''; ?>">
                     <div class="mb-1"><i class="bi bi-upc-scan fs-4"></i></div>
                     <div style="font-size: 0.85rem; line-height: 1.1;">Lector<br>RFID</div>
-                </a>
-                <a href="index.php?action=logout" class="nav-link text-danger d-flex flex-column align-items-center justify-content-center py-2 mt-auto rounded" title="Cerrar Sesión">
-                    <i class="bi bi-box-arrow-right fs-5 mb-1"></i>
-                    <span style="font-size: 9px; line-height: 1;">Salir</span>
                 </a>
             </nav>
         </aside>
@@ -352,13 +353,18 @@
                         <input type="password" class="form-control rounded-3" id="contrasena" name="contrasena" required>
                     </div>
                     <div class="mb-3">
-                        <label for="fk_ficha" class="form-label fw-semibold text-secondary">Ficha Asociada</label>
-                        <select class="form-select rounded-3" id="fk_ficha" name="fk_ficha" required>
-                            <option value="">Seleccione una ficha...</option>
-                            <?php if (!empty($listaFichas) && is_array($listaFichas)): ?>
-                                <?php foreach ($listaFichas as $ficha): ?>
-                                    <option value="<?= $ficha['id_ficha']; ?>"><?= $ficha['numero_ficha'] . ' - ' . $ficha['nombre_programa']; ?></option>
+                        <label for="id_ficha" class="form-label text-white">Seleccionar Ficha</label>
+                        <select class="form-select" id="id_ficha" name="id_ficha" required style="color: #ffffff; border-color: #30363d;">
+                            <option value="" disabled selected>-- Seleccione una ficha --</option>
+
+                            <?php if (!empty($fichas)): ?>
+                                <?php foreach ($fichas as $f): ?>
+                                    <option value="<?php echo htmlspecialchars($f['id_ficha']); ?>">
+                                        <?php echo htmlspecialchars($f['numero_ficha']); ?>
+                                    </option>
                                 <?php endforeach; ?>
+                            <?php else: ?>
+                                <option value="" disabled>No hay fichas registradas</option>
                             <?php endif; ?>
                         </select>
                     </div>
@@ -446,9 +452,13 @@
                     <p class="mb-0 text-muted small fw-semibold"><i class="bi bi-database-check text-success me-2"></i>Base de Datos: <span class="text-white">Sincronizada</span></p>
                 </div>
             </div>
-            <div class="modal-footer border-0 pt-0 px-4 pb-4">
-                <button type="button" class="btn w-100 py-2 fw-semibold modal-btn-close-dark" data-bs-dismiss="modal">Cerrar</button>
-            </div>
+
+            <a class="dropdown-item text-danger fw-bold text-center py-2 w-100"
+                style="background-color: rgba(220, 53, 69, 0.1); border-radius: 4px; transition: background-color 0.2s;"
+                href="index.php?action=logout">
+                <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+            </a>
+
         </div>
     </div>
 </div>

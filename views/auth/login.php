@@ -61,7 +61,7 @@
                 <?php endif; ?>
 
                 <!-- formulario -->
-                <form action="/proyecto_Camilo_Asistencia/index.php?action=login" method="POST">
+                <form action="index.php?action=login" method="POST">
 
                     <div class="mb-3">
                         <label for="nombre_usuario" class="form-label text-secondary small fw-bold">Usuario</label>
