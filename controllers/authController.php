@@ -38,7 +38,14 @@ class AuthController {
                 $_SESSION['nombre_usuario'] = $usuario['nombre_usuario'];
                 $_SESSION['rol'] = $usuario['nombre_rol'];
 
-                header("Location: index.php?action=dashboard");
+                // Redirección según el rol del usuario
+                if ($usuario['nombre_rol'] === 'Aprendiz') {
+                    header("Location: index.php?action=portal_aprendiz");
+                } else if ($usuario['nombre_rol'] === 'Instructor') {
+                    header("Location: index.php?action=portal_instructor");
+                } else {
+                    header("Location: index.php?action=dashboard");
+                }
                 exit();
             } else {
                 $error = "Usuario o contraseña incorrectos.";

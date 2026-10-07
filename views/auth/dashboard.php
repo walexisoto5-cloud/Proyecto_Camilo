@@ -10,16 +10,13 @@ $fichas = $fichas ?? [];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Control de Asistencia</title>
-    <!-- Bootstrap 5 CSS e Íconos -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <!-- Estilos Personalizados del Dashboard -->
     <link rel="stylesheet" href="public/css/dashboard.css">
 </head>
 
 <body>
     <div class="dashboard-container">
-        <!-- Sidebar Flotante -->
         <aside class="sidebar">
             <div class="sidebar-logo">
                 <i class="bi bi-shield-check"></i>
@@ -49,21 +46,25 @@ $fichas = $fichas ?? [];
                     <div class="mb-1"><i class="bi bi-upc-scan fs-4"></i></div>
                     <div style="font-size: 0.85rem; line-height: 1.1;">Lector<br>RFID</div>
                 </a>
+                <a href="index.php?action=portal_instructor" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Panel Instructor">
+                    <i class="bi bi-person-video3 fs-5 mb-1 text-warning"></i>
+                    <span style="font-size: 8px; line-height: 1;">P. Instructor</span>
+                </a>
+                <a href="index.php?action=portal_aprendiz" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Portal Aprendiz">
+                    <i class="bi bi-person-badge fs-5 mb-1 text-info"></i>
+                    <span style="font-size: 8px; line-height: 1;">P. Aprendiz</span>
+                </a>
             </nav>
         </aside>
 
-        <!-- Contenido Central -->
         <main class="main-content">
-            <!-- Encabezado con Saludo, Botones y Perfil Interactivo -->
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                 <div>
                     <h2 class="fw-bold mb-1 text-white">¡Hola, <?= htmlspecialchars((string)($nombreUsuario ?? 'Usuario')); ?>!</h2>
                     <p class="text-muted small mb-0">Resumen del sistema de gestión de asistencia</p>
                 </div>
 
-                <!-- Grupo derecho: Botones de acción + Tarjeta de Perfil -->
                 <div class="d-flex align-items-center gap-3 flex-wrap">
-                    <!-- Botones -->
                     <div class="d-flex gap-2">
                         <button class="btn text-white shadow-sm fw-semibold" style="background-color:#16a34a; border-radius: 10px;" data-bs-toggle="modal" data-bs-target="#modalFicha">
                             <i class="bi bi-plus-lg me-1"></i> Ficha
@@ -73,7 +74,6 @@ $fichas = $fichas ?? [];
                         </button>
                     </div>
 
-                    <!-- Tarjeta de Perfil Interactiva (Arriba a la derecha) -->
                     <div class="header-profile-card d-flex align-items-center gap-3" data-bs-toggle="modal" data-bs-target="#modalPerfil" title="Ver datos del administrador">
                         <div class="header-avatar-circle">
                             <i class="bi bi-person-fill"></i>
@@ -87,7 +87,6 @@ $fichas = $fichas ?? [];
             </div>
             <?php if (isset($vistaActiva) && $vistaActiva === 'escaner'): ?>
 
-                <!-- VISTA DEL ESCÁNER RFID EN EL CENTRO -->
                 <div class="row justify-content-center mt-4">
                     <div class="col-md-8">
                         <div class="card shadow-lg text-center p-5" style="background-color: #161b22; border: 1px solid #30363d;">
@@ -111,9 +110,7 @@ $fichas = $fichas ?? [];
 
             <?php else: ?>
 
-                <!-- Datos Conectados-->
                 <div class="row g-3">
-                    <!-- Tarjeta Aprendices -->
                     <div class="col-6 col-md-3">
                         <div class="dashboard-card stat-card shadow-sm">
                             <div class="d-flex align-items-center">
@@ -128,7 +125,6 @@ $fichas = $fichas ?? [];
                         </div>
                     </div>
 
-                    <!-- Tarjeta Asistencias Hoy -->
                     <div class="col-6 col-md-3">
                         <div class="dashboard-card stat-card shadow-sm">
                             <div class="d-flex align-items-center">
@@ -143,7 +139,6 @@ $fichas = $fichas ?? [];
                         </div>
                     </div>
 
-                    <!-- Tarjeta Número de Fichas -->
                     <div class="col-6 col-md-3">
                         <div class="dashboard-card stat-card shadow-sm">
                             <div class="d-flex align-items-center">
@@ -158,7 +153,6 @@ $fichas = $fichas ?? [];
                         </div>
                     </div>
 
-                    <!-- Tarjeta Retardos Hoy -->
                     <div class="col-6 col-md-3">
                         <div class="dashboard-card stat-card shadow-sm">
                             <div class="d-flex align-items-center">
@@ -173,7 +167,6 @@ $fichas = $fichas ?? [];
                         </div>
                     </div>
 
-                    <!-- Tarjeta Excusas Pendientes -->
                     <div class="col-6 col-md-3">
                         <div class="dashboard-card stat-card shadow-sm">
                             <div class="d-flex align-items-center">
@@ -189,7 +182,6 @@ $fichas = $fichas ?? [];
                     </div>
                 </div>
 
-                <!-- Tabla ultimos Marcajes -->
                 <div class="dashboard-card mt-4 shadow-sm">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold mb-0 text-white">Últimos Marcajes</h5>
@@ -248,8 +240,6 @@ $fichas = $fichas ?? [];
                 </div>
     </div>
 
-    <!-- Modales -->
-    <!-- Modal Nueva Ficha -->
     <div class="modal fade" id="modalFicha" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
@@ -278,7 +268,6 @@ $fichas = $fichas ?? [];
     </div>
 <?php endif; ?>
 
-<!-- Modal Nuevo Instructor -->
 <div class="modal fade" id="modalInstructor" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
@@ -320,7 +309,6 @@ $fichas = $fichas ?? [];
     </div>
 </div>
 
-<!-- Modal Registrar Aprendiz -->
 <div class="modal fade" id="modalAprendiz" tabindex="-1" aria-labelledby="modalAprendizLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content shadow-lg border-0 rounded-4">
@@ -378,7 +366,6 @@ $fichas = $fichas ?? [];
     </div>
 </div>
 
-<!-- Modal Subir Excusa -->
 <div class="modal fade" id="modalExcusas" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
@@ -416,7 +403,6 @@ $fichas = $fichas ?? [];
     </div>
 </div>
 
-<!-- Modal Datos del Administrador / Perfil -->
 <div class="modal fade" id="modalPerfil" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg modal-content-dark">
@@ -435,7 +421,6 @@ $fichas = $fichas ?? [];
                 <h4 class="fw-bold text-white mb-1"><?= htmlspecialchars((string)($nombreUsuario ?? 'Administrador')); ?></h4>
                 <p class="text-muted small mb-3"><?= htmlspecialchars((string)($rolUsuario ?? 'Administrador del Sistema')); ?></p>
 
-                <!-- Tarjeta interior de estadísticas controlada desde el CSS -->
                 <div class="row text-center py-3 my-3 g-0 modal-stats-box">
                     <div class="col-6 border-end border-secondary">
                         <span class="d-block fw-bold fs-5 text-success"><?= (int)($totalAprendices ?? 0); ?></span>
@@ -463,7 +448,6 @@ $fichas = $fichas ?? [];
     </div>
 </div>
 
-<!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 

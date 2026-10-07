@@ -42,7 +42,6 @@
         <div class="card card-login bg-white p-4">
             <div class="card-body">
 
-                <!-- Logo -->
                 <div class="text-center mb-4">
                     <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 70px; height: 70px;">
                         <i class="bi bi-person-badge text-success fs-1"></i>
@@ -50,17 +49,14 @@
                     <h4 class="fw-bold text-dark mb-1">Control de Asistencia</h4>
                 </div>
 
-                <!-- Alertas de error -->
                 <?php if (isset($error)): ?>
                     <div class="alert alert-danger alert-dismissible fade show py-2 px-3 small mb-3" role="alert">
                         <i class="bi bi-exclamation-triangle-fill me-2"></i>
                         <?= htmlspecialchars($error); ?>
                         <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                    
                 <?php endif; ?>
 
-                <!-- formulario -->
                 <form action="index.php?action=login" method="POST">
 
                     <div class="mb-3">

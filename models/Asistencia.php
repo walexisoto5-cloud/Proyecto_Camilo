@@ -7,7 +7,6 @@ class Asistencia {
     }
 
     public function registrarAccesoPorRfId($codigo_rfid) {
-        // 1. Buscar al aprendiz por su código RFID vinculando aprendiz y usuario
         $sql = "SELECT ap.id_aprendiz, u.id_usuario, u.nombre, u.apellido, ap.fk_ficha 
                 FROM aprendiz ap 
                 INNER JOIN usuario u ON ap.fk_usuario = u.id_usuario 
@@ -31,7 +30,6 @@ class Asistencia {
         $hora_actual = date('H:i:s');
         $ahora_datetime = date('Y-m-d H:i:s');
 
-        // 2. Verificar si ya tiene un registro de asistencia para el día de hoy
         $sql_check = "SELECT * FROM asistencia WHERE fk_aprendiz = ? AND fecha_asistencia = ? LIMIT 1";
         $stmt_check = $this->db->prepare($sql_check);
         $stmt_check->bind_param("is", $id_aprendiz, $hoy);
@@ -39,7 +37,6 @@ class Asistencia {
         $asistencia_hoy = $stmt_check->get_result()->fetch_assoc();
 
         if (!$asistencia_hoy) {
-            // --- REGISTRAR ENTRADA ---
             $estado = "A tiempo";
             if ($hora_actual > '08:15:00') {
                 $estado = "Retardo";
@@ -57,7 +54,6 @@ class Asistencia {
             ];
 
         } else if ($asistencia_hoy && (empty($asistencia_hoy['salida']) || $asistencia_hoy['salida'] === '0000-00-00 00:00:00')) {
-            // --- REGISTRAR SALIDA ---
             $estado_salida = "Salida normal";
 
             $sql_update = "UPDATE asistencia SET salida = ?, estado_salida = ? WHERE id_asistencia = ?";
