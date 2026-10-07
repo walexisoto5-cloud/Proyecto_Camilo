@@ -25,7 +25,12 @@ class InstructorController
         $database = new Database();
         $db = $database->getConnection();
 
-        $sqlFichas = "SELECT id_ficha, numero_ficha, nombre_programa, jornada FROM ficha ORDER BY numero_ficha ASC";
+        $sqlFichas = "SELECT f.id_ficha, f.numero_ficha, f.nombre_programa, f.jornada, 
+                             COUNT(ap.id_aprendiz) as total_aprendices 
+                      FROM ficha f 
+                      LEFT JOIN aprendiz ap ON f.id_ficha = ap.fk_ficha 
+                      GROUP BY f.id_ficha, f.numero_ficha, f.nombre_programa, f.jornada 
+                      ORDER BY total_aprendices DESC, f.id_ficha DESC";
         $resFichas = $db->query($sqlFichas);
         $fichas = $resFichas ? $resFichas->fetch_all(MYSQLI_ASSOC) : [];
 

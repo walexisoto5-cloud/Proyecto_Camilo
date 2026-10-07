@@ -171,6 +171,16 @@ class DashboardController
         $rolUsuario = $_SESSION['rol'] ?? 'Administrador';
         $fichas = $dashboardModel->obtenerFichas();
 
+        if ($rolUsuario === 'Instructor') {
+            $idFichaSeleccionada = $fichas[0]['id_ficha'] ?? 0;
+            $fechaSeleccionada = date('Y-m-d');
+            $competenciaActiva = 'ADSO - Registro Asistencia RFID';
+            $aprendicesLista = [];
+            $excusasPendientes = [];
+            require_once __DIR__ . '/../views/instructor/dashboard.php';
+            return;
+        }
+
         require_once __DIR__ . '/../views/auth/dashboard.php';
     }
 

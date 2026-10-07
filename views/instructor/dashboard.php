@@ -38,15 +38,16 @@ foreach ($fichas as $f) {
                 <i class="bi bi-shield-check"></i>
             </div>
             <nav class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white vh-100" style="width: 80px; position: fixed; top: 0; left: 0; z-index: 1000;">
-                <a href="index.php?action=portal_instructor" class="nav-link text-white active bg-dark rounded d-flex flex-column align-items-center justify-content-center py-2 mb-2" title="Panel Instructor">
+                <?php $esEscaner = (isset($vistaActiva) && $vistaActiva === 'escaner'); ?>
+                <a href="index.php?action=portal_instructor" class="nav-link text-white <?= !$esEscaner ? 'active bg-dark' : ''; ?> rounded d-flex flex-column align-items-center justify-content-center py-2 mb-2" title="Panel Instructor">
                     <i class="bi bi-person-video3 fs-5 mb-1 text-success"></i>
                     <span style="font-size: 9px; line-height: 1;">Inicio</span>
                 </a>
-                <a href="#formLlamadoLista" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Llamado a Lista">
+                <a href="index.php?action=portal_instructor#formLlamadoLista" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Llamado a Lista">
                     <i class="bi bi-check2-square fs-5 mb-1 text-info"></i>
                     <span style="font-size: 9px; line-height: 1;">Lista</span>
                 </a>
-                <a href="index.php?action=escaner_rfid" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Lector RFID">
+                <a href="index.php?action=escaner_rfid" class="nav-link text-white <?= $esEscaner ? 'active bg-dark' : ''; ?> d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Lector RFID">
                     <i class="bi bi-upc-scan fs-5 mb-1 text-primary"></i>
                     <span style="font-size: 9px; line-height: 1;">RFID</span>
                 </a>
@@ -86,6 +87,31 @@ foreach ($fichas as $f) {
 
     <div class="container-fluid px-4 py-4">
 
+        <?php if (isset($vistaActiva) && $vistaActiva === 'escaner'): ?>
+
+            <div class="row justify-content-center mt-3">
+                <div class="col-md-8">
+                    <div class="card shadow-lg text-center p-5" style="background-color: #161b22; border: 1px solid #30363d; border-radius: 20px;">
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <i class="bi bi-credit-card-2-front fs-1 text-info"></i>
+                            </div>
+                            <h3 class="card-title text-white mb-3">Lector de Asistencia RFID</h3>
+                            <p class="text-muted mb-4">Acerque la tarjeta o llavero RFID del aprendiz. El sistema procesará el registro al instante.</p>
+                            <form id="formEscaner">
+                                <div class="mb-3">
+                                    <input type="text" id="codigo_rfid" name="codigo_rfid" class="form-control form-control-lg text-center" style="background-color: #0d1117; color: #ffffff; border-color: #30363d;" placeholder="Esperando lectura de RFID..." autofocus autocomplete="off" required>
+                                </div>
+                            </form>
+                            <div id="respuestaAsistencia" class="mt-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script src="public/js/escaner.js"></script>
+
+        <?php else: ?>
+
         <?php if (isset($_GET['guardado'])): ?>
             <div class="alert alert-success alert-success-custom alert-dismissible fade show py-2 px-3 small mb-4" role="alert">
                 <i class="bi bi-check-circle-fill me-2"></i> ¡Llamado a lista y novedades guardadas exitosamente en la base de datos!
@@ -111,8 +137,12 @@ foreach ($fichas as $f) {
                     <select name="ficha_id" class="form-select form-select-dark" onchange="this.form.submit()">
                         <?php if (!empty($fichas)): ?>
                             <?php foreach ($fichas as $f): ?>
+                                <?php 
+                                    $cantAp = isset($f['total_aprendices']) ? (int)$f['total_aprendices'] : 0;
+                                    $tagAp = ($cantAp > 0) ? " ({$cantAp} aprendices)" : " (0 aprendices)";
+                                ?>
                                 <option value="<?= $f['id_ficha']; ?>" <?= ($f['id_ficha'] == $idFichaSeleccionada) ? 'selected' : ''; ?>>
-                                    Ficha <?= htmlspecialchars($f['numero_ficha']); ?> - <?= htmlspecialchars($f['nombre_programa']); ?> (<?= htmlspecialchars($f['jornada']); ?>)
+                                    Ficha <?= htmlspecialchars($f['numero_ficha']); ?> - <?= htmlspecialchars($f['nombre_programa'] ?: 'ADSO'); ?><?= $tagAp; ?>
                                 </option>
                             <?php endforeach; ?>
                         <?php else: ?>
@@ -312,6 +342,8 @@ foreach ($fichas as $f) {
                     </div>
                 </div>
             </div>
+        </div>
+        <?php endif; ?>
 
     </div>
         </main>
@@ -356,19 +388,60 @@ foreach ($fichas as $f) {
                     </div>
                 </div>
 
-                <a class="dropdown-item text-danger fw-bold text-center py-2 w-100"
-                    style="background-color: rgba(220, 53, 69, 0.1); border-radius: 4px; transition: background-color 0.2s;"
-                    href="index.php?action=logout">
-                    <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
-                </a>
+                <div class="p-3 border-top border-secondary d-flex gap-2">
+                    <button type="button" class="btn btn-outline-warning w-50 fw-semibold rounded-3 py-2" data-bs-toggle="modal" data-bs-target="#modalEditarInstructor">
+                        <i class="bi bi-pencil-square me-1"></i> Editar Perfil
+                    </button>
+                    <a class="btn btn-outline-danger w-50 fw-semibold rounded-3 py-2 d-flex align-items-center justify-content-center"
+                        style="background-color: rgba(220, 53, 69, 0.1);"
+                        href="index.php?action=logout">
+                        <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
+                    </a>
+                </div>
 
             </div>
         </div>
     </div>
 
-    <script src="public/js/instructor.js"></script>
+    <div class="modal fade" id="modalEditarInstructor" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg modal-content-dark">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-white">
+                        <i class="bi bi-pencil-square me-2 text-warning"></i>Editar Datos del Instructor
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="index.php?action=portal_instructor" method="POST">
+                    <div class="modal-body py-4">
+                        <div class="mb-3 text-start">
+                            <label class="form-label text-muted small fw-semibold">Nombre Completo</label>
+                            <input type="text" class="form-control form-control-dark" name="nombre" value="<?= htmlspecialchars((string)($nombreUsuario ?? 'Instructor')); ?>" required>
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label class="form-label text-muted small fw-semibold">Rol del Sistema</label>
+                            <input type="text" class="form-control form-control-dark" value="<?= htmlspecialchars((string)($rolUsuario ?? 'Instructor')); ?>" readonly disabled>
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label class="form-label text-muted small fw-semibold">Competencia Predeterminada</label>
+                            <input type="text" class="form-control form-control-dark" name="competencia" value="<?= htmlspecialchars($competenciaActiva); ?>" placeholder="Ej. Programación de Software">
+                        </div>
+                        <div class="p-3 rounded bg-dark border border-secondary text-muted small text-start">
+                            <i class="bi bi-info-circle text-info me-1"></i> Puedes actualizar tus datos de sesión y configuración pedagógica.
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top border-secondary">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-warning rounded-pill px-4 fw-semibold text-dark">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="public/js/instructor.js"></script>
 </body>
 
 </html>

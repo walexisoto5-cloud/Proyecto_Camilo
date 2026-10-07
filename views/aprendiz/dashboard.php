@@ -392,17 +392,66 @@ $mensajeError = $mensajeError ?? null;
                     </div>
                 </div>
 
-                <a class="dropdown-item text-danger fw-bold text-center py-2 w-100"
-                    style="background-color: rgba(220, 53, 69, 0.1); border-radius: 4px; transition: background-color 0.2s;"
-                    href="index.php?action=logout">
-                    <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
-                </a>
+                <div class="p-3 border-top border-secondary d-flex gap-2">
+                    <button type="button" class="btn btn-outline-warning w-50 fw-semibold rounded-3 py-2" data-bs-toggle="modal" data-bs-target="#modalEditarAprendiz">
+                        <i class="bi bi-pencil-square me-1"></i> Editar Perfil
+                    </button>
+                    <a class="btn btn-outline-danger w-50 fw-semibold rounded-3 py-2 d-flex align-items-center justify-content-center"
+                        style="background-color: rgba(220, 53, 69, 0.1);"
+                        href="index.php?action=logout">
+                        <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
+                    </a>
+                </div>
 
             </div>
         </div>
     </div>
 
+    <div class="modal fade" id="modalEditarAprendiz" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg modal-content-dark">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-white">
+                        <i class="bi bi-pencil-square me-2 text-warning"></i>Editar Datos del Aprendiz
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="index.php?action=portal_aprendiz" method="POST">
+                    <div class="modal-body py-4">
+                        <div class="row mb-3">
+                            <div class="col-6 text-start">
+                                <label class="form-label text-muted small fw-semibold">Nombres</label>
+                                <input type="text" class="form-control form-control-dark" name="nombre" value="<?= htmlspecialchars($datosAprendiz['nombre']); ?>" required>
+                            </div>
+                            <div class="col-6 text-start">
+                                <label class="form-label text-muted small fw-semibold">Apellidos</label>
+                                <input type="text" class="form-control form-control-dark" name="apellido" value="<?= htmlspecialchars($datosAprendiz['apellido']); ?>" required>
+                            </div>
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label class="form-label text-muted small fw-semibold">Documento de Identidad</label>
+                            <input type="text" class="form-control form-control-dark" value="<?= htmlspecialchars($datosAprendiz['identificacion']); ?>" readonly disabled>
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label class="form-label text-muted small fw-semibold">Ficha de Formación</label>
+                            <input type="text" class="form-control form-control-dark" value="Ficha <?= htmlspecialchars($datosAprendiz['numero_ficha'] ?? 'Sin asignar'); ?> - <?= htmlspecialchars($datosAprendiz['nombre_programa'] ?? 'ADSO'); ?> (<?= htmlspecialchars($datosAprendiz['jornada'] ?? 'Diurna'); ?>)" readonly disabled>
+                        </div>
+                        <div class="p-3 rounded bg-dark border border-secondary text-muted small text-start">
+                            <i class="bi bi-info-circle text-info me-1"></i> La ficha y documento son gestionados por el instructor o administración.
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top border-secondary">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-warning rounded-pill px-4 fw-semibold text-dark">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="public/js/aprendiz.js"></script>
 </body>
 
 </html>
