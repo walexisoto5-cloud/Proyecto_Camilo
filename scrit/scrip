@@ -1,81 +1,363 @@
--- creamos la base de datos
-CREATE DATABASE asistencia_db;
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Servidor: 127.0.0.1
+-- Tiempo de generación: 07-10-2026 a las 17:17:40
+-- Versión del servidor: 10.4.32-MariaDB
+-- Versión de PHP: 8.2.12
 
--- Seleccionamos la base de datos
-USE asistencia_db;
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
 
--- 1. Tabla para definir los roles de usuario
-CREATE TABLE rol (
-    id_rol INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_rol VARCHAR(45) NOT NULL
-);
 
--- 2. Tabla de usuarios para credenciales y datos personales
-CREATE TABLE usuario (
-    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_usuario VARCHAR(45) NOT NULL,
-    contrasena VARCHAR(400) NOT NULL,
-    nombre VARCHAR(45) NOT NULL,
-    apellido VARCHAR(45) NOT NULL,
-    identificacion VARCHAR(45) NOT NULL,
-    telefono VARCHAR(45),
-    fk_rol INT NOT NULL,
-    FOREIGN KEY (fk_rol) REFERENCES rol(id_rol)
-);
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 
--- 3. Tabla para la información de programas de formación y fichas
-CREATE TABLE ficha (
-    id_ficha INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_programa VARCHAR(45) NOT NULL,
-    jornada VARCHAR(45) NOT NULL,
-    fk_usuario INT,
-    FOREIGN KEY (fk_usuario) REFERENCES usuario(id_usuario)
-);
+--
+-- Base de datos: `asistencia_db`
+--
 
--- 4. Tabla para los horarios asignados a cada ficha
-CREATE TABLE horario (
-    id_horario INT AUTO_INCREMENT PRIMARY KEY,
-    dia_semana VARCHAR(45) NOT NULL,
-    entrada TIME NOT NULL,
-    salida TIME NOT NULL,
-    fk_ficha INT NOT NULL,
-    FOREIGN KEY (fk_ficha) REFERENCES ficha(id_ficha)
-);
+-- --------------------------------------------------------
 
--- 5. Tabla para vincular aprendices con fichas y tarjetas RFID
-CREATE TABLE aprendiz (
-    id_aprendiz INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_rfid VARCHAR(50),
-    fk_ficha INT NOT NULL,
-    fk_usuario INT NOT NULL,
-    FOREIGN KEY (fk_ficha) REFERENCES ficha(id_ficha),
-    FOREIGN KEY (fk_usuario) REFERENCES usuario(id_usuario)
-);
+--
+-- Estructura de tabla para la tabla `aprendiz`
+--
 
--- 6. Tabla para el registro de asistencias por fecha y hora
-CREATE TABLE asistencia (
-    id_asistencia INT AUTO_INCREMENT PRIMARY KEY,
-    fecha_asistencia DATE NOT NULL,
-    entrada DATETIME,
-    salida DATETIME,
-    estado_entrada VARCHAR(45),
-    estado_salida VARCHAR(45),
-    minutos_retardo INT DEFAULT 0,
-    minutos_salida_anticipada INT DEFAULT 0,
-    fk_aprendiz INT NOT NULL,
-    FOREIGN KEY (fk_aprendiz) REFERENCES aprendiz(id_aprendiz)
-);
+CREATE TABLE `aprendiz` (
+  `id_aprendiz` int(11) NOT NULL,
+  `codigo_rfid` varchar(50) DEFAULT NULL,
+  `fk_ficha` int(11) NOT NULL,
+  `fk_usuario` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 7. Tabla para la gestión de excusas adjuntas
-CREATE TABLE excusa (
-    id_excusa INT AUTO_INCREMENT PRIMARY KEY,
-    archivo VARCHAR(450) NOT NULL,
-    observacion VARCHAR(45),
-    estado VARCHAR(45) DEFAULT 'Pendiente',
-    fecha_subida DATE NOT NULL,
-    fecha_revision DATE,
-    fk_asistencia INT NOT NULL,
-    fk_usuario_instructor INT,
-    FOREIGN KEY (fk_asistencia) REFERENCES asistencia(id_asistencia),
-    FOREIGN KEY (fk_usuario_instructor) REFERENCES usuario(id_usuario)
-);
+--
+-- Volcado de datos para la tabla `aprendiz`
+--
+
+INSERT INTO `aprendiz` (`id_aprendiz`, `codigo_rfid`, `fk_ficha`, `fk_usuario`) VALUES
+(1, NULL, 11, 9);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `asistencia`
+--
+
+CREATE TABLE `asistencia` (
+  `id_asistencia` int(11) NOT NULL,
+  `fecha_asistencia` date NOT NULL,
+  `entrada` datetime DEFAULT NULL,
+  `salida` datetime DEFAULT NULL,
+  `estado_entrada` varchar(45) DEFAULT NULL,
+  `estado_salida` varchar(45) DEFAULT NULL,
+  `minutos_retardo` int(11) DEFAULT 0,
+  `minutos_salida_anticipada` int(11) DEFAULT 0,
+  `fk_aprendiz` int(11) NOT NULL,
+  `fecha` date NOT NULL DEFAULT curdate()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `asistencia`
+--
+
+INSERT INTO `asistencia` (`id_asistencia`, `fecha_asistencia`, `entrada`, `salida`, `estado_entrada`, `estado_salida`, `minutos_retardo`, `minutos_salida_anticipada`, `fk_aprendiz`, `fecha`) VALUES
+(1, '2026-10-02', '2026-10-02 19:54:57', '2026-10-02 19:54:59', 'Retardo', 'Salida normal', 0, 0, 1, '2026-10-02');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `excusa`
+--
+
+CREATE TABLE `excusa` (
+  `id_excusa` int(11) NOT NULL,
+  `archivo` varchar(450) NOT NULL,
+  `observacion` varchar(45) DEFAULT NULL,
+  `estado` varchar(45) DEFAULT 'Pendiente',
+  `fecha_subida` date NOT NULL,
+  `fecha_revision` date DEFAULT NULL,
+  `fk_asistencia` int(11) NOT NULL,
+  `fk_usuario_instructor` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `ficha`
+--
+
+CREATE TABLE `ficha` (
+  `id_ficha` int(11) NOT NULL,
+  `nombre_programa` varchar(45) NOT NULL,
+  `jornada` varchar(45) NOT NULL,
+  `fk_usuario` int(11) DEFAULT NULL,
+  `numero_ficha` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `ficha`
+--
+
+INSERT INTO `ficha` (`id_ficha`, `nombre_programa`, `jornada`, `fk_usuario`, `numero_ficha`) VALUES
+(1, 'adso', '', NULL, '3234082'),
+(2, 'adso', '', NULL, '3234082'),
+(3, 'adso', '', NULL, '3234082'),
+(4, 'adso', '', NULL, '3234082'),
+(5, 'adso', '', NULL, '3234082'),
+(6, 'adso', '', NULL, '3234082'),
+(7, 'adso', '', NULL, '3234082'),
+(8, 'adso', '', NULL, '3234082'),
+(9, 'adso', '', NULL, '3234083'),
+(10, 'adso', '', NULL, '3234084'),
+(11, 'adso', '', NULL, '3234082');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `horario`
+--
+
+CREATE TABLE `horario` (
+  `id_horario` int(11) NOT NULL,
+  `dia_semana` varchar(45) NOT NULL,
+  `entrada` time NOT NULL,
+  `salida` time NOT NULL,
+  `fk_ficha` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `ingresos`
+--
+
+CREATE TABLE `ingresos` (
+  `id_ingreso` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `fecha` date NOT NULL,
+  `hora_entrada` time DEFAULT NULL,
+  `hora_salida` time DEFAULT NULL,
+  `estado` enum('A tiempo','Retardo','Salida temprana','Inasistencia') DEFAULT 'A tiempo'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `rol`
+--
+
+CREATE TABLE `rol` (
+  `id_rol` int(11) NOT NULL,
+  `nombre_rol` varchar(45) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `rol`
+--
+
+INSERT INTO `rol` (`id_rol`, `nombre_rol`) VALUES
+(1, 'Administrador'),
+(2, 'Instructor'),
+(3, 'Aprendiz');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `usuario`
+--
+
+CREATE TABLE `usuario` (
+  `id_usuario` int(11) NOT NULL,
+  `nombre_usuario` varchar(45) NOT NULL,
+  `contrasena` varchar(400) NOT NULL,
+  `nombre` varchar(45) NOT NULL,
+  `apellido` varchar(45) NOT NULL,
+  `identificacion` varchar(45) NOT NULL,
+  `telefono` varchar(45) DEFAULT NULL,
+  `fk_rol` int(11) NOT NULL,
+  `codigo_rfid` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `usuario`
+--
+
+INSERT INTO `usuario` (`id_usuario`, `nombre_usuario`, `contrasena`, `nombre`, `apellido`, `identificacion`, `telefono`, `fk_rol`, `codigo_rfid`) VALUES
+(2, 'admin', '$2y$10$fz4n.OwaMiAm2hCciqvwQusuXeMNjIBpBsy9WrbnIWVSx3re.73vO', 'Admin', 'Sistema', '123456789', '3000000000', 1, NULL),
+(3, 'walexisoto5@gmail.com', '$2y$10$CLPFAe2x9N6kD6c1LKkjmeuhdk7AaksdV7l3/fGboQ7oIJ30ps2vq', 'juan', 'soto', '1038193', NULL, 2, NULL),
+(4, 'juandi', '$2y$10$ApHPCPM06J6d4LNTJW8CqOu1pQsLRCU1y1K9BqzxxcWahqTE8LeVu', 'juan', 'soto', '3412', NULL, 2, NULL),
+(5, 'admin_nuevo', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin', 'Nuevo', '123456789', '3000000000', 1, NULL),
+(6, 'admin_', '$2y$10$uD.82kcb2ozerr5xkIIQXulGIPaxbhIOw3KsvPeJqQfrn.0wg2LRy', 'administrador', 'soto', '1020', NULL, 2, NULL),
+(7, 'juandi@gmail.com', '$2y$10$UDsO.kBLlOhpjFStm5944eFOe8wh/RFixlrOxUBzTdH3sA4SsdE4q', 'juan', 'sadf', '123', NULL, 2, NULL),
+(9, 'walexisoto8@gmail.com', '$2y$10$cU74WpB/6dEfU3GxXh.URO6inG4WRFcF8.SlVo77rnmq/419ToKou', 'amparo', 'bedoya', '1234', NULL, 3, NULL);
+
+--
+-- Índices para tablas volcadas
+--
+
+--
+-- Indices de la tabla `aprendiz`
+--
+ALTER TABLE `aprendiz`
+  ADD PRIMARY KEY (`id_aprendiz`),
+  ADD KEY `fk_ficha` (`fk_ficha`),
+  ADD KEY `fk_usuario` (`fk_usuario`);
+
+--
+-- Indices de la tabla `asistencia`
+--
+ALTER TABLE `asistencia`
+  ADD PRIMARY KEY (`id_asistencia`),
+  ADD KEY `fk_aprendiz` (`fk_aprendiz`);
+
+--
+-- Indices de la tabla `excusa`
+--
+ALTER TABLE `excusa`
+  ADD PRIMARY KEY (`id_excusa`),
+  ADD KEY `fk_asistencia` (`fk_asistencia`),
+  ADD KEY `fk_usuario_instructor` (`fk_usuario_instructor`);
+
+--
+-- Indices de la tabla `ficha`
+--
+ALTER TABLE `ficha`
+  ADD PRIMARY KEY (`id_ficha`),
+  ADD KEY `fk_usuario` (`fk_usuario`);
+
+--
+-- Indices de la tabla `horario`
+--
+ALTER TABLE `horario`
+  ADD PRIMARY KEY (`id_horario`),
+  ADD KEY `fk_ficha` (`fk_ficha`);
+
+--
+-- Indices de la tabla `ingresos`
+--
+ALTER TABLE `ingresos`
+  ADD PRIMARY KEY (`id_ingreso`),
+  ADD KEY `id_usuario` (`id_usuario`);
+
+--
+-- Indices de la tabla `rol`
+--
+ALTER TABLE `rol`
+  ADD PRIMARY KEY (`id_rol`);
+
+--
+-- Indices de la tabla `usuario`
+--
+ALTER TABLE `usuario`
+  ADD PRIMARY KEY (`id_usuario`),
+  ADD UNIQUE KEY `codigo_rfid` (`codigo_rfid`),
+  ADD KEY `fk_rol` (`fk_rol`);
+
+--
+-- AUTO_INCREMENT de las tablas volcadas
+--
+
+--
+-- AUTO_INCREMENT de la tabla `aprendiz`
+--
+ALTER TABLE `aprendiz`
+  MODIFY `id_aprendiz` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `asistencia`
+--
+ALTER TABLE `asistencia`
+  MODIFY `id_asistencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `excusa`
+--
+ALTER TABLE `excusa`
+  MODIFY `id_excusa` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `ficha`
+--
+ALTER TABLE `ficha`
+  MODIFY `id_ficha` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
+-- AUTO_INCREMENT de la tabla `horario`
+--
+ALTER TABLE `horario`
+  MODIFY `id_horario` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `ingresos`
+--
+ALTER TABLE `ingresos`
+  MODIFY `id_ingreso` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `rol`
+--
+ALTER TABLE `rol`
+  MODIFY `id_rol` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `usuario`
+--
+ALTER TABLE `usuario`
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- Restricciones para tablas volcadas
+--
+
+--
+-- Filtros para la tabla `aprendiz`
+--
+ALTER TABLE `aprendiz`
+  ADD CONSTRAINT `aprendiz_ibfk_1` FOREIGN KEY (`fk_ficha`) REFERENCES `ficha` (`id_ficha`),
+  ADD CONSTRAINT `aprendiz_ibfk_2` FOREIGN KEY (`fk_usuario`) REFERENCES `usuario` (`id_usuario`);
+
+--
+-- Filtros para la tabla `asistencia`
+--
+ALTER TABLE `asistencia`
+  ADD CONSTRAINT `asistencia_ibfk_1` FOREIGN KEY (`fk_aprendiz`) REFERENCES `aprendiz` (`id_aprendiz`);
+
+--
+-- Filtros para la tabla `excusa`
+--
+ALTER TABLE `excusa`
+  ADD CONSTRAINT `excusa_ibfk_1` FOREIGN KEY (`fk_asistencia`) REFERENCES `asistencia` (`id_asistencia`),
+  ADD CONSTRAINT `excusa_ibfk_2` FOREIGN KEY (`fk_usuario_instructor`) REFERENCES `usuario` (`id_usuario`);
+
+--
+-- Filtros para la tabla `ficha`
+--
+ALTER TABLE `ficha`
+  ADD CONSTRAINT `ficha_ibfk_1` FOREIGN KEY (`fk_usuario`) REFERENCES `usuario` (`id_usuario`);
+
+--
+-- Filtros para la tabla `horario`
+--
+ALTER TABLE `horario`
+  ADD CONSTRAINT `horario_ibfk_1` FOREIGN KEY (`fk_ficha`) REFERENCES `ficha` (`id_ficha`);
+
+--
+-- Filtros para la tabla `ingresos`
+--
+ALTER TABLE `ingresos`
+  ADD CONSTRAINT `ingresos_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `usuario`
+--
+ALTER TABLE `usuario`
+  ADD CONSTRAINT `usuario_ibfk_1` FOREIGN KEY (`fk_rol`) REFERENCES `rol` (`id_rol`);
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
