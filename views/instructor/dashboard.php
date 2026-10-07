@@ -24,7 +24,37 @@ $rolUsuario = $rolUsuario ?? 'Instructor';
 
 <body class="portal-instructor-body">
 
-    <nav class="navbar navbar-expand-lg navbar-instructor py-3 px-4">
+    <div class="dashboard-container" style="background-color: #0d1117;">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <nav class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white vh-100" style="width: 80px; position: fixed; top: 0; left: 0; z-index: 1000;">
+                <a href="index.php?action=portal_instructor" class="nav-link text-white active bg-dark rounded d-flex flex-column align-items-center justify-content-center py-2 mb-2" title="Panel Instructor">
+                    <i class="bi bi-person-video3 fs-5 mb-1 text-success"></i>
+                    <span style="font-size: 9px; line-height: 1;">Inicio</span>
+                </a>
+                <a href="#formLlamadoLista" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Llamado a Lista">
+                    <i class="bi bi-check2-square fs-5 mb-1 text-info"></i>
+                    <span style="font-size: 9px; line-height: 1;">Lista</span>
+                </a>
+                <a href="index.php?action=escaner_rfid" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Lector RFID">
+                    <i class="bi bi-upc-scan fs-5 mb-1 text-primary"></i>
+                    <span style="font-size: 9px; line-height: 1;">RFID</span>
+                </a>
+                <a href="#panel-excusas" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Excusas por Revisar">
+                    <i class="bi bi-inbox-fill fs-5 mb-1 text-warning"></i>
+                    <span style="font-size: 9px; line-height: 1;">Excusas</span>
+                </a>
+                <a href="index.php?action=logout" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded mt-auto text-danger" title="Cerrar Sesión">
+                    <i class="bi bi-box-arrow-right fs-5 mb-1"></i>
+                    <span style="font-size: 9px; line-height: 1;">Salir</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content p-0" style="background-color: transparent; min-width: 0;">
+            <nav class="navbar navbar-expand-lg navbar-instructor py-3 px-4">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center text-white fw-bold gap-2" href="#">
                 <span class="badge rounded-circle p-2 sena-badge-instructor">
@@ -226,7 +256,7 @@ $rolUsuario = $rolUsuario ?? 'Instructor';
             </div>
 
             <div class="col-lg-3">
-                <div class="card instructor-card p-3 shadow-sm h-100">
+                <div class="card instructor-card p-3 shadow-sm h-100" id="panel-excusas">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="fw-bold text-white mb-0">
                             <i class="bi bi-inbox text-warning me-2"></i>Excusas por Revisar
@@ -277,8 +307,8 @@ $rolUsuario = $rolUsuario ?? 'Instructor';
                 </div>
             </div>
 
-        </div>
-
+    </div>
+        </main>
     </div>
 
     <script src="public/js/instructor.js"></script>

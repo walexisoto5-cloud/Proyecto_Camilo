@@ -31,7 +31,37 @@ $mensajeError = $mensajeError ?? null;
 
 <body class="portal-aprendiz-body">
 
-    <nav class="navbar navbar-expand-lg navbar-aprendiz py-3 px-4">
+    <div class="dashboard-container" style="background-color: #0d1117;">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <nav class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white vh-100" style="width: 80px; position: fixed; top: 0; left: 0; z-index: 1000;">
+                <a href="index.php?action=portal_aprendiz" class="nav-link text-white active bg-dark rounded d-flex flex-column align-items-center justify-content-center py-2 mb-2" title="Inicio / Mi Portal">
+                    <i class="bi bi-house-door-fill fs-5 mb-1 text-success"></i>
+                    <span style="font-size: 9px; line-height: 1;">Inicio</span>
+                </a>
+                <a href="#modalSubirExcusa" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" data-bs-toggle="modal" data-bs-target="#modalSubirExcusa" title="Radicar Excusa">
+                    <i class="bi bi-file-earmark-medical-fill fs-5 mb-1 text-info"></i>
+                    <span style="font-size: 9px; line-height: 1;">Excusa</span>
+                </a>
+                <a href="#seccion-historial" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Historial de Asistencias">
+                    <i class="bi bi-clock-history fs-5 mb-1 text-warning"></i>
+                    <span style="font-size: 9px; line-height: 1;">Historial</span>
+                </a>
+                <a href="#seccion-excusas" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Mis Excusas Médicas">
+                    <i class="bi bi-folder-check fs-5 mb-1 text-primary"></i>
+                    <span style="font-size: 9px; line-height: 1;">Mis Excusas</span>
+                </a>
+                <a href="index.php?action=logout" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded mt-auto text-danger" title="Cerrar Sesión">
+                    <i class="bi bi-box-arrow-right fs-5 mb-1"></i>
+                    <span style="font-size: 9px; line-height: 1;">Salir</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content p-0" style="background-color: transparent; min-width: 0;">
+            <nav class="navbar navbar-expand-lg navbar-aprendiz py-3 px-4">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center text-white fw-bold gap-2" href="#">
                 <span class="badge rounded-circle p-2 sena-badge-icon">
@@ -183,7 +213,7 @@ $mensajeError = $mensajeError ?? null;
 
         <div class="row g-4">
             <div class="col-lg-8">
-                <div class="card portal-card p-3 shadow-sm h-100">
+                <div class="card portal-card p-3 shadow-sm h-100" id="seccion-historial">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold text-white mb-0">
                             <i class="bi bi-clock-history text-success me-2"></i>Historial de Asistencias
@@ -244,7 +274,7 @@ $mensajeError = $mensajeError ?? null;
             </div>
 
             <div class="col-lg-4">
-                <div class="card portal-card p-3 shadow-sm h-100">
+                <div class="card portal-card p-3 shadow-sm h-100" id="seccion-excusas">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold text-white mb-0">
                             <i class="bi bi-file-medical text-success me-2"></i>Excusas Médicas
@@ -289,8 +319,8 @@ $mensajeError = $mensajeError ?? null;
                 </div>
             </div>
 
-        </div>
-
+    </div>
+        </main>
     </div>
 
     <div class="modal fade" id="modalSubirExcusa" tabindex="-1" aria-hidden="true">
