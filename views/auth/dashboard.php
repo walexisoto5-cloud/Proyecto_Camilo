@@ -309,46 +309,47 @@ $fichas = $fichas ?? [];
     </div>
 </div>
 
-<div class="modal fade" id="modalAprendiz" tabindex="-1" aria-labelledby="modalAprendizLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content shadow-lg border-0 rounded-4">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title fw-bold" id="modalAprendizLabel">
-                    <i class="bi bi-people-fill me-2"></i> Registrar Nuevo Aprendiz
+<div class="modal fade" id="modalAprendiz" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-people-fill me-2" style="color: var(--accent-green, #22c55e);"></i>Registrar Nuevo Aprendiz
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="index.php?action=crearAprendiz" method="POST">
-                <div class="modal-body p-4">
+                <div class="modal-body">
                     <div class="mb-3">
-                        <label for="documento" class="form-label fw-semibold text-secondary">Documento de Identidad</label>
-                        <input type="text" class="form-control rounded-3" id="documento" name="documento" required>
+                        <label class="form-label fw-bold small text-muted">Documento de Identidad</label>
+                        <input type="text" class="form-control form-control-lg fs-6" name="documento" placeholder="Número de documento" required style="border-radius: 12px;">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-muted">Nombres</label>
+                            <input type="text" class="form-control form-control-lg fs-6" name="nombre" placeholder="Nombres" required style="border-radius: 12px;">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-muted">Apellidos</label>
+                            <input type="text" class="form-control form-control-lg fs-6" name="apellido" placeholder="Apellidos" required style="border-radius: 12px;">
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label for="nombre" class="form-label fw-semibold text-secondary">Nombres</label>
-                        <input type="text" class="form-control rounded-3" id="nombre" name="nombre" required>
+                        <label class="form-label fw-bold small text-muted">Nombre de Usuario (para Iniciar Sesión)</label>
+                        <input type="text" class="form-control form-control-lg fs-6" name="nombre_usuario" placeholder="Ej. usuario.aprendiz o correo" required style="border-radius: 12px;">
                     </div>
                     <div class="mb-3">
-                        <label for="apellido" class="form-label fw-semibold text-secondary">Apellidos</label>
-                        <input type="text" class="form-control rounded-3" id="apellido" name="apellido" required>
+                        <label class="form-label fw-bold small text-muted">Contraseña</label>
+                        <input type="password" class="form-control form-control-lg fs-6" name="contrasena" placeholder="Contraseña de acceso" required style="border-radius: 12px;">
                     </div>
                     <div class="mb-3">
-                        <label for="correo" class="form-label fw-semibold text-secondary">Correo Electrónico</label>
-                        <input type="email" class="form-control rounded-3" id="correo" name="correo" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="contrasena" class="form-label fw-semibold text-secondary">Contraseña</label>
-                        <input type="password" class="form-control rounded-3" id="contrasena" name="contrasena" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="id_ficha" class="form-label text-white">Seleccionar Ficha</label>
-                        <select class="form-select" id="id_ficha" name="id_ficha" required style="color: #ffffff; border-color: #30363d;">
+                        <label class="form-label fw-bold small text-muted">Ficha de Formación</label>
+                        <select class="form-select form-select-lg fs-6" name="id_ficha" required style="border-radius: 12px;">
                             <option value="" disabled selected>-- Seleccione una ficha --</option>
-
                             <?php if (!empty($fichas)): ?>
                                 <?php foreach ($fichas as $f): ?>
                                     <option value="<?php echo htmlspecialchars($f['id_ficha']); ?>">
-                                        <?php echo htmlspecialchars($f['numero_ficha']); ?>
+                                        Ficha <?php echo htmlspecialchars($f['numero_ficha']); ?> - <?php echo htmlspecialchars($f['nombre_programa'] ?? ''); ?>
                                     </option>
                                 <?php endforeach; ?>
                             <?php else: ?>
@@ -357,9 +358,9 @@ $fichas = $fichas ?? [];
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer bg-light px-4 py-3">
-                    <button type="button" class="btn btn-outline-secondary rounded-3 px-4" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success rounded-3 px-4">Guardar Aprendiz</button>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 12px;">Cancelar</button>
+                    <button type="submit" class="btn btn-action-custom" style="background-color: #16a34a; color: #fff; border-radius: 12px;">Guardar Aprendiz</button>
                 </div>
             </form>
         </div>

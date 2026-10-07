@@ -8,6 +8,14 @@ $aprendicesLista = $aprendicesLista ?? [];
 $excusasPendientes = $excusasPendientes ?? [];
 $nombreUsuario = $nombreUsuario ?? 'Instructor';
 $rolUsuario = $rolUsuario ?? 'Instructor';
+
+$fichaActualInfo = null;
+foreach ($fichas as $f) {
+    if ((int)$f['id_ficha'] === (int)$idFichaSeleccionada) {
+        $fichaActualInfo = $f;
+        break;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -46,10 +54,6 @@ $rolUsuario = $rolUsuario ?? 'Instructor';
                     <i class="bi bi-inbox-fill fs-5 mb-1 text-warning"></i>
                     <span style="font-size: 9px; line-height: 1;">Excusas</span>
                 </a>
-                <a href="index.php?action=logout" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded mt-auto text-danger" title="Cerrar Sesión">
-                    <i class="bi bi-box-arrow-right fs-5 mb-1"></i>
-                    <span style="font-size: 9px; line-height: 1;">Salir</span>
-                </a>
             </nav>
         </aside>
 
@@ -67,13 +71,15 @@ $rolUsuario = $rolUsuario ?? 'Instructor';
                 <a href="index.php?action=escaner_rfid" class="btn btn-outline-info btn-sm rounded-pill px-3">
                     <i class="bi bi-upc-scan me-1"></i> Lector RFID
                 </a>
-                <div class="text-end d-none d-md-block">
-                    <div class="fw-semibold text-white"><?= htmlspecialchars($nombreUsuario); ?></div>
-                    <small class="text-muted"><?= htmlspecialchars($rolUsuario); ?></small>
+                <div class="header-profile-card d-flex align-items-center gap-3" data-bs-toggle="modal" data-bs-target="#modalPerfil" title="Ver información del instructor">
+                    <div class="header-avatar-circle">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <div class="text-start pe-2 d-none d-sm-block">
+                        <h6 class="fw-bold mb-0 text-white" style="font-size: 0.9rem;"><?= htmlspecialchars((string)($nombreUsuario ?? 'Instructor')); ?></h6>
+                        <span class="text-muted" style="font-size: 0.75rem;"><?= htmlspecialchars((string)($rolUsuario ?? 'Instructor')); ?></span>
+                    </div>
                 </div>
-                <a href="index.php?action=logout" class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                    <i class="bi bi-box-arrow-right me-1"></i> Salir
-                </a>
             </div>
         </div>
     </nav>
@@ -309,6 +315,55 @@ $rolUsuario = $rolUsuario ?? 'Instructor';
 
     </div>
         </main>
+    </div>
+
+    <div class="modal fade" id="modalPerfil" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg modal-content-dark">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-white">
+                        <i class="bi bi-person-badge-fill me-2" style="color: #22c55e;"></i>Información del Instructor
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <div class="mb-3">
+                        <div class="modal-avatar-container">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold text-white mb-1"><?= htmlspecialchars((string)($nombreUsuario ?? 'Instructor')); ?></h4>
+                    <p class="text-muted small mb-1"><?= htmlspecialchars((string)($rolUsuario ?? 'Instructor')); ?> SENA</p>
+                    <p class="text-muted small mb-3">
+                        <?= $fichaActualInfo ? 'Ficha ' . htmlspecialchars($fichaActualInfo['numero_ficha']) . ' - ' . htmlspecialchars($fichaActualInfo['nombre_programa']) : 'Gestión de Asistencia Académica'; ?>
+                    </p>
+
+                    <div class="row text-center py-3 my-3 g-0 modal-stats-box">
+                        <div class="col-6 border-end border-secondary">
+                            <span class="d-block fw-bold fs-5 text-success"><?= count($aprendicesLista); ?></span>
+                            <span class="text-muted small">Aprendices en Ficha</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="d-block fw-bold fs-5 text-warning"><?= count($excusasPendientes); ?></span>
+                            <span class="text-muted small">Excusas por Revisar</span>
+                        </div>
+                    </div>
+
+                    <div class="text-start px-2 mt-3">
+                        <p class="mb-2 text-muted small fw-semibold"><i class="bi bi-person-workspace text-success me-2"></i>Sesión Actual: <span class="text-white"><?= htmlspecialchars($competenciaActiva); ?></span></p>
+                        <p class="mb-2 text-muted small fw-semibold"><i class="bi bi-calendar-event text-success me-2"></i>Fecha de Clase: <span class="text-white"><?= htmlspecialchars($fechaSeleccionada); ?></span></p>
+                        <p class="mb-0 text-muted small fw-semibold"><i class="bi bi-shield-check text-success me-2"></i>Estado de Sesión: <span class="text-white">Activa y Segura</span></p>
+                    </div>
+                </div>
+
+                <a class="dropdown-item text-danger fw-bold text-center py-2 w-100"
+                    style="background-color: rgba(220, 53, 69, 0.1); border-radius: 4px; transition: background-color 0.2s;"
+                    href="index.php?action=logout">
+                    <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+                </a>
+
+            </div>
+        </div>
     </div>
 
     <script src="public/js/instructor.js"></script>

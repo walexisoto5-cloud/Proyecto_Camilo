@@ -93,16 +93,19 @@ class DashboardController
             $documento = trim($_POST['documento'] ?? '');
             $nombre = trim($_POST['nombre'] ?? '');
             $apellido = trim($_POST['apellido'] ?? '');
-            $correo = trim($_POST['correo'] ?? '');
+            $nombreUsuario = trim($_POST['nombre_usuario'] ?? '');
+            if (empty($nombreUsuario)) {
+                $nombreUsuario = trim($_POST['correo'] ?? '');
+            }
             $contrasena = trim($_POST['contrasena'] ?? '');
             $idFicha = (int)($_POST['id_ficha'] ?? 0);
 
-            if (!empty($documento) && !empty($nombre) && !empty($apellido) && !empty($correo) && !empty($contrasena) && $idFicha > 0) {
+            if (!empty($documento) && !empty($nombre) && !empty($apellido) && !empty($nombreUsuario) && !empty($contrasena) && $idFicha > 0) {
                 $database = new Database();
                 $db = $database->getConnection();
                 $dashboardModel = new Dashboard($db);
 
-                $dashboardModel->crearAprendiz($documento, $nombre, $apellido, $correo, $contrasena, $idFicha);
+                $dashboardModel->crearAprendiz($documento, $nombre, $apellido, $nombreUsuario, $contrasena, $idFicha);
             }
         }
         header("Location: index.php?action=dashboard");
