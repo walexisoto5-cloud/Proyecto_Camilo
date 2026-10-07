@@ -109,19 +109,136 @@ table td, .table td {
     background-color: #16a34a !important;
 }
 
-/* Forzar que todo el texto dentro de los modales sea de color negro o gris oscuro para que resalte */
+/* Modales en Modo Oscuro - Todo el texto y etiquetas en blanco para máxima legibilidad */
 .modal-content, 
-.modal-content .modal-title, 
-.modal-content .form-label, 
-.modal-content .form-control, 
-.modal-content .form-select {
-    color: #212529 !important;
+.modal-content-dark {
+    background-color: #161b22 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 16px !important;
+    color: #ffffff !important;
 }
 
-/* Opcional: Para asegurarnos de que el texto de los inputs se vea oscuro y claro al escribir */
-.modal-content .form-control::placeholder {
-    color: #6c757d !important;
-    opacity: 1;
+.modal-content .modal-header,
+.modal-content .modal-body,
+.modal-content .modal-footer {
+    color: #ffffff !important;
+}
+
+.modal-content .modal-title,
+.modal-content-dark .modal-title {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+/* Etiquetas en blanco de alto contraste */
+.modal-content label,
+.modal-content .form-label,
+.modal-content-dark label,
+.modal-content-dark .form-label,
+label.form-label {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    margin-bottom: 0.35rem !important;
+    display: inline-block !important;
+}
+
+/* Campos de entrada normales */
+.modal-content .form-control, 
+.modal-content .form-select,
+.modal-content textarea,
+.form-control,
+.form-control-dark,
+.form-select-dark,
+.input-dark {
+    background-color: #0d1117 !important;
+    border: 1px solid #30363d !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+.modal-content .form-control:focus, 
+.modal-content .form-select:focus,
+.modal-content textarea:focus,
+.form-control:focus,
+.form-control-dark:focus,
+.form-select-dark:focus,
+.input-dark:focus {
+    background-color: #0d1117 !important;
+    border-color: #22c55e !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    box-shadow: 0 0 0 0.25rem rgba(34, 197, 94, 0.25) !important;
+}
+
+/* Campos deshabilitados o de solo lectura (Disabled / Readonly) */
+.modal-content .form-control:disabled,
+.modal-content .form-control[readonly],
+.form-control:disabled,
+.form-control[readonly],
+.form-control-dark:disabled,
+.form-control-dark[readonly],
+.input-dark:disabled,
+.input-dark[readonly] {
+    background-color: #161b22 !important;
+    border: 1px solid #30363d !important;
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+    opacity: 1 !important;
+    cursor: not-allowed;
+}
+
+/* Placeholders con alto contraste (separados por prefijo para compatibilidad total) */
+.form-control::-webkit-input-placeholder,
+.form-control-dark::-webkit-input-placeholder,
+.input-dark::-webkit-input-placeholder,
+.input-novedad::-webkit-input-placeholder,
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+    opacity: 1 !important;
+}
+
+.form-control::-moz-placeholder,
+.form-control-dark::-moz-placeholder,
+.input-dark::-moz-placeholder,
+.input-novedad::-moz-placeholder,
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+    color: #cbd5e1 !important;
+    opacity: 1 !important;
+}
+
+.form-control::placeholder,
+.form-control-dark::placeholder,
+.input-dark::placeholder,
+.input-novedad::placeholder,
+input::placeholder,
+textarea::placeholder {
+    color: #cbd5e1 !important;
+    opacity: 1 !important;
+}
+
+/* Textos secundarios y botones dentro de modales */
+.modal-content .text-muted,
+.modal-content-dark .text-muted {
+    color: #cbd5e1 !important;
+}
+
+.modal-content .btn-outline-secondary,
+.modal-footer .btn-outline-secondary,
+.btn-outline-secondary {
+    color: #ffffff !important;
+    border-color: #64748b !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.modal-content .btn-outline-secondary:hover,
+.modal-footer .btn-outline-secondary:hover,
+.btn-outline-secondary:hover {
+    color: #ffffff !important;
+    background-color: #334155 !important;
+    border-color: #94a3b8 !important;
 }
 
 /* Asegura que el contenedor del icono dentro de las tarjetas estadísticas mantenga un formato cuadrado y centre perfectamente su contenido */

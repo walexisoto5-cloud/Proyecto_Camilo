@@ -101,6 +101,12 @@ switch ($action) {
         $controller->mostrarEscaner();
         break;
 
+    case 'calendario':
+        require_once __DIR__ . '/controllers/DashboardController.php';
+        $controller = new DashboardController();
+        $controller->mostrarCalendario();
+        break;
+
     case 'procesar_rfid':
         require_once __DIR__ . '/controllers/DashboardController.php';
         $controller = new DashboardController();

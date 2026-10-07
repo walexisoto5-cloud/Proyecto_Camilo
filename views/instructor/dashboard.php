@@ -26,8 +26,8 @@ foreach ($fichas as $f) {
     <title>Panel del Instructor - Toma de Asistencia SENA</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="public/css/dashboard.css">
-    <link rel="stylesheet" href="public/css/instructor.css">
+    <link rel="stylesheet" href="public/css/dashboard.css?v=<?= file_exists('public/css/dashboard.css') ? filemtime('public/css/dashboard.css') : time(); ?>">
+    <link rel="stylesheet" href="public/css/instructor.css?v=<?= file_exists('public/css/instructor.css') ? filemtime('public/css/instructor.css') : time(); ?>">
 </head>
 
 <body class="portal-instructor-body">
@@ -54,6 +54,10 @@ foreach ($fichas as $f) {
                 <a href="#panel-excusas" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Excusas por Revisar">
                     <i class="bi bi-inbox-fill fs-5 mb-1 text-warning"></i>
                     <span style="font-size: 9px; line-height: 1;">Excusas</span>
+                </a>
+                <a href="index.php?action=calendario" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Google Calendario">
+                    <i class="bi bi-calendar3 fs-5 mb-1 text-primary"></i>
+                    <span style="font-size: 9px; line-height: 1;">Calendario</span>
                 </a>
             </nav>
         </aside>
@@ -204,11 +208,11 @@ foreach ($fichas as $f) {
                         <div class="table-responsive">
                             <table class="table table-dark table-hover align-middle mb-0" id="tablaAsistencia">
                                 <thead>
-                                    <tr class="text-muted small border-bottom border-secondary">
-                                        <th style="width: 30%;">APRENDIZ</th>
-                                        <th style="width: 35%; text-align: center;">MARCADO RÁPIDO</th>
-                                        <th style="width: 15%; text-align: center;">ALERTA SENA</th>
-                                        <th style="width: 20%;">OBSERVACIÓN</th>
+                                    <tr class="text-white-50 small border-bottom border-secondary">
+                                        <th style="width: 30%;" class="text-white">APRENDIZ</th>
+                                        <th style="width: 35%; text-align: center;" class="text-white">MARCADO RÁPIDO</th>
+                                        <th style="width: 15%; text-align: center;" class="text-white">ALERTA SENA</th>
+                                        <th style="width: 20%;" class="text-white">NOVEDAD / OBSERVACIÓN</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -264,7 +268,7 @@ foreach ($fichas as $f) {
                                                 </td>
 
                                                 <td>
-                                                    <input type="text" name="observacion[<?= $id; ?>]" class="form-control form-control-sm form-control-dark" placeholder="Novedad opcional...">
+                                                    <input type="text" name="observacion[<?= $id; ?>]" class="form-control form-control-sm form-control-dark text-white input-novedad" placeholder="Novedad opcional...">
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -365,26 +369,26 @@ foreach ($fichas as $f) {
                         </div>
                     </div>
                     <h4 class="fw-bold text-white mb-1"><?= htmlspecialchars((string)($nombreUsuario ?? 'Instructor')); ?></h4>
-                    <p class="text-muted small mb-1"><?= htmlspecialchars((string)($rolUsuario ?? 'Instructor')); ?> SENA</p>
-                    <p class="text-muted small mb-3">
+                    <p class="text-light small mb-1"><?= htmlspecialchars((string)($rolUsuario ?? 'Instructor')); ?> SENA</p>
+                    <p class="text-light small mb-3">
                         <?= $fichaActualInfo ? 'Ficha ' . htmlspecialchars($fichaActualInfo['numero_ficha']) . ' - ' . htmlspecialchars($fichaActualInfo['nombre_programa']) : 'Gestión de Asistencia Académica'; ?>
                     </p>
 
                     <div class="row text-center py-3 my-3 g-0 modal-stats-box">
                         <div class="col-6 border-end border-secondary">
                             <span class="d-block fw-bold fs-5 text-success"><?= count($aprendicesLista); ?></span>
-                            <span class="text-muted small">Aprendices en Ficha</span>
+                            <span class="text-white-50 small">Aprendices en Ficha</span>
                         </div>
                         <div class="col-6">
                             <span class="d-block fw-bold fs-5 text-warning"><?= count($excusasPendientes); ?></span>
-                            <span class="text-muted small">Excusas por Revisar</span>
+                            <span class="text-white-50 small">Excusas por Revisar</span>
                         </div>
                     </div>
 
                     <div class="text-start px-2 mt-3">
-                        <p class="mb-2 text-muted small fw-semibold"><i class="bi bi-person-workspace text-success me-2"></i>Sesión Actual: <span class="text-white"><?= htmlspecialchars($competenciaActiva); ?></span></p>
-                        <p class="mb-2 text-muted small fw-semibold"><i class="bi bi-calendar-event text-success me-2"></i>Fecha de Clase: <span class="text-white"><?= htmlspecialchars($fechaSeleccionada); ?></span></p>
-                        <p class="mb-0 text-muted small fw-semibold"><i class="bi bi-shield-check text-success me-2"></i>Estado de Sesión: <span class="text-white">Activa y Segura</span></p>
+                        <p class="mb-2 text-white-50 small fw-semibold"><i class="bi bi-person-workspace text-success me-2"></i>Sesión Actual: <span class="text-white"><?= htmlspecialchars($competenciaActiva); ?></span></p>
+                        <p class="mb-2 text-white-50 small fw-semibold"><i class="bi bi-calendar-event text-success me-2"></i>Fecha de Clase: <span class="text-white"><?= htmlspecialchars($fechaSeleccionada); ?></span></p>
+                        <p class="mb-0 text-white-50 small fw-semibold"><i class="bi bi-shield-check text-success me-2"></i>Estado de Sesión: <span class="text-white">Activa y Segura</span></p>
                     </div>
                 </div>
 
@@ -415,24 +419,24 @@ foreach ($fichas as $f) {
                 <form action="index.php?action=portal_instructor" method="POST">
                     <div class="modal-body py-4">
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-semibold">Nombre Completo</label>
-                            <input type="text" class="form-control form-control-dark" name="nombre" value="<?= htmlspecialchars((string)($nombreUsuario ?? 'Instructor')); ?>" required>
+                            <label class="form-label text-white small fw-semibold">Nombre Completo</label>
+                            <input type="text" class="form-control form-control-dark text-white" name="nombre" value="<?= htmlspecialchars((string)($nombreUsuario ?? 'Instructor')); ?>" required>
                         </div>
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-semibold">Rol del Sistema</label>
-                            <input type="text" class="form-control form-control-dark" value="<?= htmlspecialchars((string)($rolUsuario ?? 'Instructor')); ?>" readonly disabled>
+                            <label class="form-label text-white small fw-semibold">Rol del Sistema</label>
+                            <input type="text" class="form-control form-control-dark text-white" value="<?= htmlspecialchars((string)($rolUsuario ?? 'Instructor')); ?>" readonly disabled style="background-color: #161b22; color: #cbd5e1; -webkit-text-fill-color: #cbd5e1;">
                         </div>
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-semibold">Competencia Predeterminada</label>
-                            <input type="text" class="form-control form-control-dark" name="competencia" value="<?= htmlspecialchars($competenciaActiva); ?>" placeholder="Ej. Programación de Software">
+                            <label class="form-label text-white small fw-semibold">Competencia Predeterminada</label>
+                            <input type="text" class="form-control form-control-dark text-white" name="competencia" value="<?= htmlspecialchars($competenciaActiva); ?>" placeholder="Ej. Programación de Software">
                         </div>
-                        <div class="p-3 rounded bg-dark border border-secondary text-muted small text-start">
+                        <div class="p-3 rounded bg-dark border border-secondary text-light small text-start">
                             <i class="bi bi-info-circle text-info me-1"></i> Puedes actualizar tus datos de sesión y configuración pedagógica.
                         </div>
                     </div>
                     <div class="modal-footer border-top border-secondary">
-                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-warning rounded-pill px-4 fw-semibold text-dark">Guardar Cambios</button>
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4 text-white" data-bs-dismiss="modal" style="border-color: #64748b;">Cancelar</button>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold text-white shadow-sm">Guardar Cambios</button>
                     </div>
                 </form>
             </div>

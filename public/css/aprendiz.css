@@ -74,19 +74,72 @@ body.portal-aprendiz-body {
     background-color: #161b22 !important;
     border: 1px solid #30363d !important;
     border-radius: 16px !important;
+    color: #ffffff !important;
 }
 
-.input-dark {
+.modal-content-dark label,
+.modal-content-dark .form-label {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+.modal-content-dark .text-muted {
+    color: #cbd5e1 !important;
+}
+
+.input-dark,
+.form-control-dark,
+.modal-content-dark .form-control {
     background-color: #0d1117 !important;
-    border-color: #30363d !important;
-    color: #f3f4f6 !important;
+    border: 1px solid #30363d !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
 }
 
-.input-dark:focus {
+.input-dark:focus,
+.form-control-dark:focus,
+.modal-content-dark .form-control:focus {
     background-color: #0d1117 !important;
     border-color: #22c55e !important;
     color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
     box-shadow: 0 0 0 0.25rem rgba(34, 197, 94, 0.25) !important;
+}
+
+.input-dark:disabled,
+.input-dark[readonly],
+.form-control-dark:disabled,
+.form-control-dark[readonly],
+.modal-content-dark .form-control:disabled,
+.modal-content-dark .form-control[readonly] {
+    background-color: #161b22 !important;
+    border: 1px solid #30363d !important;
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+    opacity: 1 !important;
+    cursor: not-allowed;
+}
+
+.input-dark::-webkit-input-placeholder,
+.form-control-dark::-webkit-input-placeholder,
+.modal-content-dark .form-control::-webkit-input-placeholder {
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+    opacity: 1 !important;
+}
+
+.input-dark::-moz-placeholder,
+.form-control-dark::-moz-placeholder,
+.modal-content-dark .form-control::-moz-placeholder {
+    color: #cbd5e1 !important;
+    opacity: 1 !important;
+}
+
+.input-dark::placeholder,
+.form-control-dark::placeholder,
+.modal-content-dark .form-control::placeholder {
+    color: #cbd5e1 !important;
+    opacity: 1 !important;
 }
 
 /* Botón institucional SENA */

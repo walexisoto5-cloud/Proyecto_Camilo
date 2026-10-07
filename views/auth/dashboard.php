@@ -12,7 +12,7 @@ $fichas = $fichas ?? [];
     <title>Dashboard - Control de Asistencia</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="public/css/dashboard.css">
+    <link rel="stylesheet" href="public/css/dashboard.css?v=<?= file_exists('public/css/dashboard.css') ? filemtime('public/css/dashboard.css') : time(); ?>">
 </head>
 
 <body>
@@ -42,9 +42,13 @@ $fichas = $fichas ?? [];
                     <i class="bi bi-file-earmark-arrow-up-fill fs-5 mb-1"></i>
                     <span style="font-size: 9px; line-height: 1;">Excusa</span>
                 </a>
-                <a href="index.php?action=escaner_rfid" class="nav-link text-center text-white p-2 <?php echo (isset($_GET['action']) && $_GET['action'] === 'escaner_rfid') ? 'active bg-dark rounded' : ''; ?>">
+                <a href="index.php?action=escaner_rfid" class="nav-link text-center text-white p-2 <?php echo (isset($_GET['action']) && $_GET['action'] === 'escaner_rfid') ? 'active bg-dark rounded' : ''; ?>" title="Lector RFID">
                     <div class="mb-1"><i class="bi bi-upc-scan fs-4"></i></div>
                     <div style="font-size: 0.85rem; line-height: 1.1;">Lector<br>RFID</div>
+                </a>
+                <a href="index.php?action=calendario" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Google Calendario">
+                    <i class="bi bi-calendar3 fs-5 mb-1 text-primary"></i>
+                    <span style="font-size: 8px; line-height: 1;">Calendario</span>
                 </a>
                 <a href="index.php?action=portal_instructor" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Panel Instructor">
                     <i class="bi bi-person-video3 fs-5 mb-1 text-warning"></i>
@@ -242,24 +246,24 @@ $fichas = $fichas ?? [];
 
     <div class="modal fade" id="modalFicha" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-content border-0 shadow-lg modal-content-dark" style="border-radius: 20px;">
                 <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-journal-plus me-2" style="color: var(--sidebar-purple);"></i>Nueva Ficha</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title fw-bold text-white"><i class="bi bi-journal-plus me-2" style="color: var(--sidebar-purple);"></i>Nueva Ficha</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="index.php?action=crear_ficha" method="POST">
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Número de Ficha</label>
-                            <input type="text" class="form-control form-control-lg fs-6" name="numero_ficha" placeholder="Ej. 3234082" required style="border-radius: 12px;">
+                            <label class="form-label fw-bold small text-white">Número de Ficha</label>
+                            <input type="text" class="form-control form-control-dark form-control-lg fs-6 text-white" name="numero_ficha" placeholder="Ej. 3234082" required style="border-radius: 12px;">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Programa de Formación</label>
-                            <input type="text" class="form-control form-control-lg fs-6" name="programa_formacion" placeholder="Ej. ADSO" required style="border-radius: 12px;">
+                            <label class="form-label fw-bold small text-white">Programa de Formación</label>
+                            <input type="text" class="form-control form-control-dark form-control-lg fs-6 text-white" name="programa_formacion" placeholder="Ej. ADSO" required style="border-radius: 12px;">
                         </div>
                     </div>
                     <div class="modal-footer border-0">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 12px;">Cancelar</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 12px;">Cancelar</button>
                         <button type="submit" class="btn btn-action-custom" style="background-color: #16a34a; color: #fff;">Guardar Ficha</button>
                     </div>
                 </form>
@@ -270,38 +274,38 @@ $fichas = $fichas ?? [];
 
 <div class="modal fade" id="modalInstructor" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+        <div class="modal-content border-0 shadow-lg modal-content-dark" style="border-radius: 20px;">
             <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill me-2" style="color: var(--accent-orange);"></i>Nuevo Instructor</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title fw-bold text-white"><i class="bi bi-person-plus-fill me-2" style="color: var(--accent-orange);"></i>Nuevo Instructor</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="index.php?action=crear_instructor" method="POST">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">Documento / Identificación</label>
-                        <input type="text" class="form-control form-control-lg fs-6" name="documento" required style="border-radius: 12px;">
+                        <label class="form-label fw-bold small text-white">Documento / Identificación</label>
+                        <input type="text" class="form-control form-control-dark form-control-lg fs-6 text-white" name="documento" required style="border-radius: 12px;">
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold small text-muted">Nombre</label>
-                            <input type="text" class="form-control form-control-lg fs-6" name="nombre" required style="border-radius: 12px;">
+                            <label class="form-label fw-bold small text-white">Nombre</label>
+                            <input type="text" class="form-control form-control-dark form-control-lg fs-6 text-white" name="nombre" required style="border-radius: 12px;">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold small text-muted">Apellido</label>
-                            <input type="text" class="form-control form-control-lg fs-6" name="apellido" required style="border-radius: 12px;">
+                            <label class="form-label fw-bold small text-white">Apellido</label>
+                            <input type="text" class="form-control form-control-dark form-control-lg fs-6 text-white" name="apellido" required style="border-radius: 12px;">
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">Nombre de Usuario / Correo</label>
-                        <input type="text" class="form-control form-control-lg fs-6" name="correo" required style="border-radius: 12px;">
+                        <label class="form-label fw-bold small text-white">Nombre de Usuario / Correo</label>
+                        <input type="text" class="form-control form-control-dark form-control-lg fs-6 text-white" name="correo" required style="border-radius: 12px;">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">Contraseña</label>
-                        <input type="password" class="form-control form-control-lg fs-6" name="contrasena" required style="border-radius: 12px;">
+                        <label class="form-label fw-bold small text-white">Contraseña</label>
+                        <input type="password" class="form-control form-control-dark form-control-lg fs-6 text-white" name="contrasena" required style="border-radius: 12px;">
                     </div>
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 12px;">Cancelar</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 12px;">Cancelar</button>
                     <button type="submit" class="btn btn-action-orange" style="background-color: #16a34a; color: #fff;">Guardar Instructor</button>
                 </div>
             </form>
@@ -311,40 +315,40 @@ $fichas = $fichas ?? [];
 
 <div class="modal fade" id="modalAprendiz" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+        <div class="modal-content border-0 shadow-lg modal-content-dark" style="border-radius: 20px;">
             <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold">
+                <h5 class="modal-title fw-bold text-white">
                     <i class="bi bi-people-fill me-2" style="color: var(--accent-green, #22c55e);"></i>Registrar Nuevo Aprendiz
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="index.php?action=crearAprendiz" method="POST">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">Documento de Identidad</label>
-                        <input type="text" class="form-control form-control-lg fs-6" name="documento" placeholder="Número de documento" required style="border-radius: 12px;">
+                        <label class="form-label fw-bold small text-white">Documento de Identidad</label>
+                        <input type="text" class="form-control form-control-dark form-control-lg fs-6 text-white" name="documento" placeholder="Número de documento" required style="border-radius: 12px;">
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold small text-muted">Nombres</label>
-                            <input type="text" class="form-control form-control-lg fs-6" name="nombre" placeholder="Nombres" required style="border-radius: 12px;">
+                            <label class="form-label fw-bold small text-white">Nombres</label>
+                            <input type="text" class="form-control form-control-dark form-control-lg fs-6 text-white" name="nombre" placeholder="Nombres" required style="border-radius: 12px;">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold small text-muted">Apellidos</label>
-                            <input type="text" class="form-control form-control-lg fs-6" name="apellido" placeholder="Apellidos" required style="border-radius: 12px;">
+                            <label class="form-label fw-bold small text-white">Apellidos</label>
+                            <input type="text" class="form-control form-control-dark form-control-lg fs-6 text-white" name="apellido" placeholder="Apellidos" required style="border-radius: 12px;">
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">Nombre de Usuario (para Iniciar Sesión)</label>
-                        <input type="text" class="form-control form-control-lg fs-6" name="nombre_usuario" placeholder="Ej. usuario.aprendiz o correo" required style="border-radius: 12px;">
+                        <label class="form-label fw-bold small text-white">Nombre de Usuario (para Iniciar Sesión)</label>
+                        <input type="text" class="form-control form-control-dark form-control-lg fs-6 text-white" name="nombre_usuario" placeholder="Ej. usuario.aprendiz o correo" required style="border-radius: 12px;">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">Contraseña</label>
-                        <input type="password" class="form-control form-control-lg fs-6" name="contrasena" placeholder="Contraseña de acceso" required style="border-radius: 12px;">
+                        <label class="form-label fw-bold small text-white">Contraseña</label>
+                        <input type="password" class="form-control form-control-dark form-control-lg fs-6 text-white" name="contrasena" placeholder="Contraseña de acceso" required style="border-radius: 12px;">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">Ficha de Formación</label>
-                        <select class="form-select form-select-lg fs-6" name="id_ficha" required style="border-radius: 12px;">
+                        <label class="form-label fw-bold small text-white">Ficha de Formación</label>
+                        <select class="form-select form-select-dark form-select-lg fs-6 text-white" name="id_ficha" required style="border-radius: 12px;">
                             <option value="" disabled selected>-- Seleccione una ficha --</option>
                             <?php if (!empty($fichas)): ?>
                                 <?php foreach ($fichas as $f): ?>
@@ -359,7 +363,7 @@ $fichas = $fichas ?? [];
                     </div>
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 12px;">Cancelar</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 12px;">Cancelar</button>
                     <button type="submit" class="btn btn-action-custom" style="background-color: #16a34a; color: #fff; border-radius: 12px;">Guardar Aprendiz</button>
                 </div>
             </form>
@@ -369,34 +373,34 @@ $fichas = $fichas ?? [];
 
 <div class="modal fade" id="modalExcusas" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+        <div class="modal-content border-0 shadow-lg modal-content-dark" style="border-radius: 20px;">
             <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold">
+                <h5 class="modal-title fw-bold text-white">
                     <i class="bi bi-file-earmark-arrow-up me-2" style="color: var(--sidebar-purple);"></i>Registrar Excusa
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="index.php?action=guardar_excusa" method="POST" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">Documento del Aprendiz</label>
-                        <input type="text" class="form-control form-control-lg fs-6" name="documento_aprendiz" placeholder="Número de documento" required style="border-radius: 12px;">
+                        <label class="form-label fw-bold small text-white">Documento del Aprendiz</label>
+                        <input type="text" class="form-control form-control-dark form-control-lg fs-6 text-white" name="documento_aprendiz" placeholder="Número de documento" required style="border-radius: 12px;">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">Fecha de la Falta / Incapacidad</label>
-                        <input type="date" class="form-control form-control-lg fs-6" name="fecha_falta" required style="border-radius: 12px;">
+                        <label class="form-label fw-bold small text-white">Fecha de la Falta / Incapacidad</label>
+                        <input type="date" class="form-control form-control-dark form-control-lg fs-6 text-white" name="fecha_falta" required style="border-radius: 12px;">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">Motivo / Observación</label>
-                        <textarea class="form-control fs-6" name="motivo" rows="3" placeholder="Describe brevemente el motivo..." required style="border-radius: 12px;"></textarea>
+                        <label class="form-label fw-bold small text-white">Motivo / Observación</label>
+                        <textarea class="form-control form-control-dark fs-6 text-white" name="motivo" rows="3" placeholder="Describe brevemente el motivo..." required style="border-radius: 12px;"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">Adjuntar Evidencia (PDF o Imagen)</label>
-                        <input type="file" class="form-control form-control-lg fs-6" name="archivo_excusa" accept=".pdf, .jpg, .jpeg, .png" required style="border-radius: 12px;">
+                        <label class="form-label fw-bold small text-white">Adjuntar Evidencia (PDF o Imagen)</label>
+                        <input type="file" class="form-control form-control-dark form-control-lg fs-6 text-white" name="archivo_excusa" accept=".pdf, .jpg, .jpeg, .png" required style="border-radius: 12px;">
                     </div>
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 12px;">Cancelar</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 12px;">Cancelar</button>
                     <button type="submit" class="btn btn-action-custom" style="background-color: #16a34a; color: #fff;">Subir Excusa</button>
                 </div>
             </form>
@@ -420,22 +424,22 @@ $fichas = $fichas ?? [];
                     </div>
                 </div>
                 <h4 class="fw-bold text-white mb-1"><?= htmlspecialchars((string)($nombreUsuario ?? 'Administrador')); ?></h4>
-                <p class="text-muted small mb-3"><?= htmlspecialchars((string)($rolUsuario ?? 'Administrador del Sistema')); ?></p>
+                <p class="text-light small mb-3"><?= htmlspecialchars((string)($rolUsuario ?? 'Administrador del Sistema')); ?></p>
 
                 <div class="row text-center py-3 my-3 g-0 modal-stats-box">
                     <div class="col-6 border-end border-secondary">
                         <span class="d-block fw-bold fs-5 text-success"><?= (int)($totalAprendices ?? 0); ?></span>
-                        <span class="text-muted small">Registrados</span>
+                        <span class="text-white-50 small">Registrados</span>
                     </div>
                     <div class="col-6">
                         <span class="d-block fw-bold fs-5 text-success"><?= (int)($asistenciasHoy ?? 0); ?></span>
-                        <span class="text-muted small">Activos Hoy</span>
+                        <span class="text-white-50 small">Activos Hoy</span>
                     </div>
                 </div>
 
                 <div class="text-start px-2 mt-3">
-                    <p class="mb-2 text-muted small fw-semibold"><i class="bi bi-shield-check text-success me-2"></i>Estado de Sesión: <span class="text-white">Activa y Segura</span></p>
-                    <p class="mb-0 text-muted small fw-semibold"><i class="bi bi-database-check text-success me-2"></i>Base de Datos: <span class="text-white">Sincronizada</span></p>
+                    <p class="mb-2 text-white-50 small fw-semibold"><i class="bi bi-shield-check text-success me-2"></i>Estado de Sesión: <span class="text-white">Activa y Segura</span></p>
+                    <p class="mb-0 text-white-50 small fw-semibold"><i class="bi bi-database-check text-success me-2"></i>Base de Datos: <span class="text-white">Sincronizada</span></p>
                 </div>
             </div>
 

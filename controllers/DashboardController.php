@@ -184,6 +184,23 @@ class DashboardController
         require_once __DIR__ . '/../views/auth/dashboard.php';
     }
 
+    // Muestra la vista de Google Calendar integrada
+    public function mostrarCalendario()
+    {
+        $this->verificarSesion();
+
+        $database = new Database();
+        $db = $database->getConnection();
+        $dashboardModel = new Dashboard($db);
+
+        $nombreUsuario = $_SESSION['nombre_completo'] ?? $_SESSION['nombre_usuario'] ?? 'Usuario';
+        $rolUsuario = $_SESSION['rol'] ?? 'Administrador';
+        $fichas = $dashboardModel->obtenerFichas();
+        $vistaActiva = 'calendario';
+
+        require_once __DIR__ . '/../views/calendario/calendario.php';
+    }
+
     // Endpoint AJAX para registrar lectura de tarjeta/llavero RFID
     public function procesarRfId()
     {

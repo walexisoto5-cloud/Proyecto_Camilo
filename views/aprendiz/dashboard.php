@@ -25,8 +25,8 @@ $mensajeError = $mensajeError ?? null;
     <title>Portal del Aprendiz - Control de Asistencia SENA</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="public/css/dashboard.css">
-    <link rel="stylesheet" href="public/css/aprendiz.css">
+    <link rel="stylesheet" href="public/css/dashboard.css?v=<?= file_exists('public/css/dashboard.css') ? filemtime('public/css/dashboard.css') : time(); ?>">
+    <link rel="stylesheet" href="public/css/aprendiz.css?v=<?= file_exists('public/css/aprendiz.css') ? filemtime('public/css/aprendiz.css') : time(); ?>">
 </head>
 
 <body class="portal-aprendiz-body">
@@ -52,6 +52,10 @@ $mensajeError = $mensajeError ?? null;
                 <a href="#seccion-excusas" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Mis Excusas Médicas">
                     <i class="bi bi-folder-check fs-5 mb-1 text-primary"></i>
                     <span style="font-size: 9px; line-height: 1;">Mis Excusas</span>
+                </a>
+                <a href="index.php?action=calendario" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Google Calendario">
+                    <i class="bi bi-calendar3 fs-5 mb-1 text-primary"></i>
+                    <span style="font-size: 9px; line-height: 1;">Calendario</span>
                 </a>
             </nav>
         </aside>
@@ -335,16 +339,16 @@ $mensajeError = $mensajeError ?? null;
                         <input type="hidden" name="documento_aprendiz" value="<?= htmlspecialchars($datosAprendiz['identificacion'] ?? ''); ?>">
 
                         <div class="mb-3">
-                            <label class="form-label text-muted small fw-semibold">Fecha de la Falta</label>
-                            <input type="date" class="form-control input-dark" name="fecha_falta" required>
+                            <label class="form-label text-white small fw-semibold">Fecha de la Falta</label>
+                            <input type="date" class="form-control input-dark text-white" name="fecha_falta" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label text-muted small fw-semibold">Motivo / Explicación de la falta</label>
-                            <textarea class="form-control input-dark" name="motivo" rows="3" placeholder="Ej. Incapacidad médica EPS, cita médica..." required></textarea>
+                            <label class="form-label text-white small fw-semibold">Motivo / Explicación de la falta</label>
+                            <textarea class="form-control input-dark text-white" name="motivo" rows="3" placeholder="Ej. Incapacidad médica EPS, cita médica..." required></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label text-muted small fw-semibold">Adjuntar Evidencia (PDF o Imagen)</label>
-                            <input type="file" class="form-control input-dark" name="archivo_excusa" accept=".pdf, .jpg, .jpeg, .png" required>
+                            <label class="form-label text-white small fw-semibold">Adjuntar Evidencia (PDF o Imagen)</label>
+                            <input type="file" class="form-control input-dark text-white" name="archivo_excusa" accept=".pdf, .jpg, .jpeg, .png" required>
                         </div>
                     </div>
                     <div class="modal-footer border-top border-secondary">
@@ -372,23 +376,23 @@ $mensajeError = $mensajeError ?? null;
                         </div>
                     </div>
                     <h4 class="fw-bold text-white mb-1"><?= htmlspecialchars($datosAprendiz['nombre'] . ' ' . $datosAprendiz['apellido']); ?></h4>
-                    <p class="text-muted small mb-1">Doc: <?= htmlspecialchars($datosAprendiz['identificacion']); ?></p>
-                    <p class="text-muted small mb-3">Ficha <?= htmlspecialchars($datosAprendiz['numero_ficha'] ?? 'Sin asignar'); ?> - <?= htmlspecialchars($datosAprendiz['nombre_programa'] ?? 'ADSO'); ?> (<?= htmlspecialchars($datosAprendiz['jornada'] ?? 'Diurna'); ?>)</p>
+                    <p class="text-light small mb-1">Doc: <?= htmlspecialchars($datosAprendiz['identificacion']); ?></p>
+                    <p class="text-light small mb-3">Ficha <?= htmlspecialchars($datosAprendiz['numero_ficha'] ?? 'Sin asignar'); ?> - <?= htmlspecialchars($datosAprendiz['nombre_programa'] ?? 'ADSO'); ?> (<?= htmlspecialchars($datosAprendiz['jornada'] ?? 'Diurna'); ?>)</p>
 
                     <div class="row text-center py-3 my-3 g-0 modal-stats-box">
                         <div class="col-6 border-end border-secondary">
                             <span class="d-block fw-bold fs-5 text-success"><?= $totalAsistencias; ?></span>
-                            <span class="text-muted small">Asistencias</span>
+                            <span class="text-white-50 small">Asistencias</span>
                         </div>
                         <div class="col-6">
                             <span class="d-block fw-bold fs-5 text-danger"><?= $totalFaltas; ?></span>
-                            <span class="text-muted small">Inasistencias</span>
+                            <span class="text-white-50 small">Inasistencias</span>
                         </div>
                     </div>
 
                     <div class="text-start px-2 mt-3">
-                        <p class="mb-2 text-muted small fw-semibold"><i class="bi bi-shield-check text-success me-2"></i>Estado de Sesión: <span class="text-white">Activa y Segura</span></p>
-                        <p class="mb-0 text-muted small fw-semibold"><i class="bi bi-check2-circle text-success me-2"></i>Porcentaje Asistencia: <span class="text-white"><?= $porcentajeAsistencia; ?>%</span></p>
+                        <p class="mb-2 text-white-50 small fw-semibold"><i class="bi bi-shield-check text-success me-2"></i>Estado de Sesión: <span class="text-white">Activa y Segura</span></p>
+                        <p class="mb-0 text-white-50 small fw-semibold"><i class="bi bi-check2-circle text-success me-2"></i>Porcentaje Asistencia: <span class="text-white"><?= $porcentajeAsistencia; ?>%</span></p>
                     </div>
                 </div>
 
@@ -420,29 +424,29 @@ $mensajeError = $mensajeError ?? null;
                     <div class="modal-body py-4">
                         <div class="row mb-3">
                             <div class="col-6 text-start">
-                                <label class="form-label text-muted small fw-semibold">Nombres</label>
-                                <input type="text" class="form-control form-control-dark" name="nombre" value="<?= htmlspecialchars($datosAprendiz['nombre']); ?>" required>
+                                <label class="form-label text-white small fw-semibold">Nombres</label>
+                                <input type="text" class="form-control form-control-dark text-white" name="nombre" value="<?= htmlspecialchars($datosAprendiz['nombre']); ?>" required>
                             </div>
                             <div class="col-6 text-start">
-                                <label class="form-label text-muted small fw-semibold">Apellidos</label>
-                                <input type="text" class="form-control form-control-dark" name="apellido" value="<?= htmlspecialchars($datosAprendiz['apellido']); ?>" required>
+                                <label class="form-label text-white small fw-semibold">Apellidos</label>
+                                <input type="text" class="form-control form-control-dark text-white" name="apellido" value="<?= htmlspecialchars($datosAprendiz['apellido']); ?>" required>
                             </div>
                         </div>
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-semibold">Documento de Identidad</label>
-                            <input type="text" class="form-control form-control-dark" value="<?= htmlspecialchars($datosAprendiz['identificacion']); ?>" readonly disabled>
+                            <label class="form-label text-white small fw-semibold">Documento de Identidad</label>
+                            <input type="text" class="form-control form-control-dark text-white" value="<?= htmlspecialchars($datosAprendiz['identificacion']); ?>" readonly disabled style="background-color: #161b22; color: #cbd5e1; -webkit-text-fill-color: #cbd5e1;">
                         </div>
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-semibold">Ficha de Formación</label>
-                            <input type="text" class="form-control form-control-dark" value="Ficha <?= htmlspecialchars($datosAprendiz['numero_ficha'] ?? 'Sin asignar'); ?> - <?= htmlspecialchars($datosAprendiz['nombre_programa'] ?? 'ADSO'); ?> (<?= htmlspecialchars($datosAprendiz['jornada'] ?? 'Diurna'); ?>)" readonly disabled>
+                            <label class="form-label text-white small fw-semibold">Ficha de Formación</label>
+                            <input type="text" class="form-control form-control-dark text-white" value="Ficha <?= htmlspecialchars($datosAprendiz['numero_ficha'] ?? 'Sin asignar'); ?> - <?= htmlspecialchars($datosAprendiz['nombre_programa'] ?? 'ADSO'); ?> (<?= htmlspecialchars($datosAprendiz['jornada'] ?? 'Diurna'); ?>)" readonly disabled style="background-color: #161b22; color: #cbd5e1; -webkit-text-fill-color: #cbd5e1;">
                         </div>
-                        <div class="p-3 rounded bg-dark border border-secondary text-muted small text-start">
+                        <div class="p-3 rounded bg-dark border border-secondary text-light small text-start">
                             <i class="bi bi-info-circle text-info me-1"></i> La ficha y documento son gestionados por el instructor o administración.
                         </div>
                     </div>
                     <div class="modal-footer border-top border-secondary">
-                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-warning rounded-pill px-4 fw-semibold text-dark">Guardar Cambios</button>
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4 text-white" data-bs-dismiss="modal" style="border-color: #64748b;">Cancelar</button>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold text-white shadow-sm">Guardar Cambios</button>
                     </div>
                 </form>
             </div>
