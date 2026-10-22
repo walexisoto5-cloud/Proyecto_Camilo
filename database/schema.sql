@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS usuario (
     apellido VARCHAR(45) NOT NULL,
     identificacion VARCHAR(45) NOT NULL,
     telefono VARCHAR(45),
+    codigo_rfid VARCHAR(50),
+    estado VARCHAR(20) DEFAULT 'Activo',
     fk_rol INT NOT NULL,
     FOREIGN KEY (fk_rol) REFERENCES rol(id_rol)
 );
@@ -26,20 +28,25 @@ CREATE TABLE IF NOT EXISTS usuario (
 -- 3. Tabla para la información de programas de formación y fichas
 CREATE TABLE IF NOT EXISTS ficha (
     id_ficha INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_programa VARCHAR(45) NOT NULL,
+    numero_ficha VARCHAR(50) NOT NULL UNIQUE,
+    nombre_programa VARCHAR(100) NOT NULL,
     jornada VARCHAR(45) NOT NULL,
     fk_usuario INT,
     FOREIGN KEY (fk_usuario) REFERENCES usuario(id_usuario)
 );
 
--- 4. Tabla para los horarios asignados a cada ficha
+-- 4. Tabla para los horarios / sesiones de formación asignados a cada ficha
 CREATE TABLE IF NOT EXISTS horario (
     id_horario INT AUTO_INCREMENT PRIMARY KEY,
     dia_semana VARCHAR(45) NOT NULL,
     entrada TIME NOT NULL,
     salida TIME NOT NULL,
     fk_ficha INT NOT NULL,
-    FOREIGN KEY (fk_ficha) REFERENCES ficha(id_ficha)
+    fk_usuario_instructor INT NULL,
+    competencia VARCHAR(150) NULL,
+    ambiente VARCHAR(45) NULL,
+    FOREIGN KEY (fk_ficha) REFERENCES ficha(id_ficha),
+    FOREIGN KEY (fk_usuario_instructor) REFERENCES usuario(id_usuario)
 );
 
 -- 5. Tabla para vincular aprendices con fichas y tarjetas RFID

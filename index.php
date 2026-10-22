@@ -3,9 +3,13 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+date_default_timezone_set('America/Bogota');
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+require_once __DIR__ . '/controllers/helpers.php';
 
 $action = $_GET['action'] ?? 'dashboard';
 
@@ -70,23 +74,132 @@ switch ($action) {
         $controller->procesarExcusa();
         break;
 
-    // --- RUTAS DE GESTIÓN Y ESCÁNER RFID ---
-    case 'crear_ficha':
-        require_once __DIR__ . '/controllers/DashboardController.php';
-        $controller = new DashboardController();
-        $controller->crearFicha();
+    case 'remitir_comite':
+        require_once __DIR__ . '/controllers/InstructorController.php';
+        $controller = new InstructorController();
+        $controller->remitirComite();
+        break;
+
+    case 'reporte_asistencia_pdf':
+        require_once __DIR__ . '/controllers/ReporteController.php';
+        $controller = new ReporteController();
+        $controller->generarReporteAsistenciaPdf();
+        break;
+
+    case 'reporte_asistencia_excel':
+        require_once __DIR__ . '/controllers/ReporteController.php';
+        $controller = new ReporteController();
+        $controller->generarReporteAsistenciaExcel();
+        break;
+
+    // --- RUTAS DE GESTIÓN CRUD DESACOPLADAS (SRP) ---
+    case 'gestion_aprendices':
+        require_once __DIR__ . '/controllers/AprendizController.php';
+        $controller = new AprendizController();
+        $controller->viewAprendices();
+        break;
+
+    case 'crear_aprendiz':
+    case 'crearAprendiz':
+        require_once __DIR__ . '/controllers/AprendizController.php';
+        $controller = new AprendizController();
+        $controller->crearAprendiz();
+        break;
+
+    case 'importar_aprendices':
+        require_once __DIR__ . '/controllers/AprendizController.php';
+        $controller = new AprendizController();
+        $controller->importarAprendicesCsv();
+        break;
+
+    case 'actualizar_aprendiz':
+        require_once __DIR__ . '/controllers/AprendizController.php';
+        $controller = new AprendizController();
+        $controller->actualizarAprendiz();
+        break;
+
+    case 'eliminar_aprendiz':
+        require_once __DIR__ . '/controllers/AprendizController.php';
+        $controller = new AprendizController();
+        $controller->eliminarAprendiz();
+        break;
+
+    case 'gestion_instructores':
+        require_once __DIR__ . '/controllers/InstructorController.php';
+        $controller = new InstructorController();
+        $controller->viewInstructores();
         break;
 
     case 'crear_instructor':
-        require_once __DIR__ . '/controllers/DashboardController.php';
-        $controller = new DashboardController();
+        require_once __DIR__ . '/controllers/InstructorController.php';
+        $controller = new InstructorController();
         $controller->crearInstructor();
         break;
 
-    case 'crearAprendiz':
-        require_once __DIR__ . '/controllers/DashboardController.php';
-        $controller = new DashboardController();
-        $controller->crearAprendiz();
+    case 'actualizar_instructor':
+        require_once __DIR__ . '/controllers/InstructorController.php';
+        $controller = new InstructorController();
+        $controller->actualizarInstructor();
+        break;
+
+    case 'eliminar_instructor':
+        require_once __DIR__ . '/controllers/InstructorController.php';
+        $controller = new InstructorController();
+        $controller->eliminarInstructor();
+        break;
+
+    case 'gestion_fichas':
+        require_once __DIR__ . '/controllers/FichaController.php';
+        $controller = new FichaController();
+        $controller->viewFichas();
+        break;
+
+    case 'crear_ficha':
+        require_once __DIR__ . '/controllers/FichaController.php';
+        $controller = new FichaController();
+        $controller->crearFicha();
+        break;
+
+    case 'actualizar_ficha':
+        require_once __DIR__ . '/controllers/FichaController.php';
+        $controller = new FichaController();
+        $controller->actualizarFicha();
+        break;
+
+    case 'eliminar_ficha':
+        require_once __DIR__ . '/controllers/FichaController.php';
+        $controller = new FichaController();
+        $controller->eliminarFicha();
+        break;
+
+    case 'gestion_excusas':
+        require_once __DIR__ . '/controllers/ExcusaController.php';
+        $controller = new ExcusaController();
+        $controller->viewExcusas();
+        break;
+
+    case 'aprobar_excusa':
+        require_once __DIR__ . '/controllers/ExcusaController.php';
+        $controller = new ExcusaController();
+        $controller->procesarExcusa('Aprobada');
+        break;
+
+    case 'rechazar_excusa':
+        require_once __DIR__ . '/controllers/ExcusaController.php';
+        $controller = new ExcusaController();
+        $controller->procesarExcusa('Rechazada');
+        break;
+
+    case 'gestion_comite':
+        require_once __DIR__ . '/controllers/ComiteController.php';
+        $controller = new ComiteController();
+        $controller->viewComite();
+        break;
+
+    case 'actualizar_estado_comite':
+        require_once __DIR__ . '/controllers/ComiteController.php';
+        $controller = new ComiteController();
+        $controller->actualizarEstadoComite();
         break;
 
     case 'guardar_excusa':
@@ -105,6 +218,30 @@ switch ($action) {
         require_once __DIR__ . '/controllers/DashboardController.php';
         $controller = new DashboardController();
         $controller->mostrarCalendario();
+        break;
+
+    case 'importar_horario_calendario':
+        require_once __DIR__ . '/controllers/DashboardController.php';
+        $controller = new DashboardController();
+        $controller->importarHorarioCalendario();
+        break;
+
+    case 'descargar_plantilla_calendario':
+        require_once __DIR__ . '/controllers/DashboardController.php';
+        $controller = new DashboardController();
+        $controller->descargarPlantillaCalendario();
+        break;
+
+    case 'agregar_bloque_calendario':
+        require_once __DIR__ . '/controllers/DashboardController.php';
+        $controller = new DashboardController();
+        $controller->agregarBloqueCalendario();
+        break;
+
+    case 'eliminar_bloque_calendario':
+        require_once __DIR__ . '/controllers/DashboardController.php';
+        $controller = new DashboardController();
+        $controller->eliminarBloqueCalendario();
         break;
 
     case 'procesar_rfid':

@@ -154,3 +154,88 @@ body.portal-aprendiz-body {
     border-color: #15803d !important;
     color: #ffffff !important;
 }
+
+/* Utilidades adicionales Portal Aprendiz */
+.portal-container-bg {
+    background-color: #0d1117;
+}
+
+.portal-main-content {
+    background-color: transparent;
+    min-width: 0;
+}
+
+.user-name-title {
+    font-size: 0.9rem;
+}
+
+.user-doc-subtitle {
+    font-size: 0.75rem;
+}
+
+.alert-comite-warning {
+    background-color: rgba(234, 179, 8, 0.15) !important;
+}
+
+.alert-comite-danger {
+    background-color: rgba(239, 68, 68, 0.15) !important;
+}
+
+.excusas-scroll-list {
+    max-height: 580px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.excusa-card-item.border-left-pendiente {
+    border-left: 4px solid #f59e0b !important;
+    border-color: #30363d;
+}
+
+.excusa-card-item.border-left-aprobada {
+    border-left: 4px solid #10b981 !important;
+    border-color: #30363d;
+}
+
+.excusa-card-item.border-left-rechazada {
+    border-left: 4px solid #ef4444 !important;
+    border-color: #30363d;
+}
+
+.badge-text-xs {
+    font-size: 0.7rem;
+}
+
+.text-xs {
+    font-size: 0.75rem;
+}
+
+.text-xxs {
+    font-size: 0.72rem;
+}
+
+.excusa-motivo-box {
+    font-size: 0.8rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.text-sena-green {
+    color: #22c55e !important;
+}
+
+.modal-avatar-red {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.form-control-readonly-dark {
+    background-color: #161b22 !important;
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+}
+
+.btn-cancel-modal {
+    border-color: #64748b !important;
+}
+

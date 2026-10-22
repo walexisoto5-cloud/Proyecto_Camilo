@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set('America/Bogota');
+
 class Database {
     private $host = "localhost";
     private $db_name = "asistencia_db"; 
@@ -17,6 +19,7 @@ class Database {
         }
 
         $this->conn->set_charset("utf8");
+        $this->conn->query("SET time_zone = '-05:00'");
 
         return $this->conn;
     }

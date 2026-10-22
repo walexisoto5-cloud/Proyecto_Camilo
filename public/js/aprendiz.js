@@ -1,6 +1,39 @@
 // Control interactivo para el portal del aprendiz
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Inicialización dinámica de barras de progreso
+    document.querySelectorAll('[data-progress]').forEach(function (el) {
+        const val = el.getAttribute('data-progress');
+        if (val !== null) {
+            el.style.width = val + '%';
+        }
+    });
+
+    // Filtro interactivo para el historial de excusas del aprendiz
+    const contenedorFiltrosAp = document.getElementById('filtroExcusasAprendiz');
+    if (contenedorFiltrosAp) {
+        const botonesAp = contenedorFiltrosAp.querySelectorAll('button[data-filtro]');
+        const itemsExcusasAp = document.querySelectorAll('#listaExcusasAprendiz .excusa-card-item');
+
+        botonesAp.forEach(btn => {
+            btn.addEventListener('click', function () {
+                botonesAp.forEach(b => b.classList.remove('active', 'text-white'));
+                this.classList.add('active', 'text-white');
+
+                const filtro = (this.getAttribute('data-filtro') || 'todas').toLowerCase();
+
+                itemsExcusasAp.forEach(item => {
+                    const estado = (item.getAttribute('data-estado') || '').toLowerCase();
+                    if (filtro === 'todas' || estado === filtro) {
+                        item.classList.remove('d-none');
+                    } else {
+                        item.classList.add('d-none');
+                    }
+                });
+            });
+        });
+    }
+
     if (typeof Swal === 'undefined') return;
 
     // Confirmación al cerrar sesión

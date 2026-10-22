@@ -1,0 +1,33 @@
+body {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    min-height: 100vh;
+}
+
+.card-login {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.btn-sena {
+    background-color: #39a900;
+    border-color: #39a900;
+    color: #fff;
+    font-weight: 600;
+}
+
+.btn-sena:hover {
+    background-color: #2e8800;
+    border-color: #2e8800;
+    color: #fff;
+}
+
+
+.login-container {
+    max-width: 420px;
+}
+
+.login-avatar-badge {
+    width: 70px;
+    height: 70px;
+}

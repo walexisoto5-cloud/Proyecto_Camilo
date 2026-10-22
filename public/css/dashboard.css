@@ -372,3 +372,258 @@ textarea::placeholder {
 .modal-content-dark .modal-title {
     color: #ffffff !important;
 }
+
+
+/* =========================================================================
+   CLASES EXTRAÍDAS DE REFACTORIZACIÓN CLEAN CODE (ZERO INLINE STYLES)
+   ========================================================================= */
+
+body.bg-dark-app {
+    background-color: #0d1117 !important;
+    color: #f3f4f6 !important;
+}
+
+.dashboard-container-dark {
+    background-color: #0d1117 !important;
+    min-height: 100vh;
+}
+
+.main-content-dark {
+    margin-left: 80px;
+    padding: 25px;
+    flex-grow: 1;
+    background-color: #0d1117;
+}
+
+.card-dark-panel {
+    background-color: #161b22 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 16px !important;
+}
+
+.card-dark-modal {
+    background-color: #161b22 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 16px !important;
+}
+
+/* Alertas Flash del Sistema */
+.flash-alert-success {
+    background-color: rgba(34, 197, 94, 0.2) !important;
+    color: #4ade80 !important;
+    border-left: 4px solid #22c55e !important;
+}
+
+.flash-alert-info {
+    background-color: rgba(56, 189, 248, 0.2) !important;
+    color: #38bdf8 !important;
+    border-left: 4px solid #0284c7 !important;
+}
+
+.flash-alert-warning {
+    background-color: rgba(234, 179, 8, 0.2) !important;
+    color: #facc15 !important;
+    border-left: 4px solid #eab308 !important;
+}
+
+.flash-alert-danger {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    color: #f87171 !important;
+    border-left: 4px solid #ef4444 !important;
+}
+
+/* Sidebar */
+.sidebar-nav-container {
+    width: 80px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1050;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-right: 1px solid #30363d;
+}
+
+.sidebar-item-text {
+    font-size: 8.5px;
+    line-height: 1.1;
+    margin-top: 2px;
+    text-align: center;
+}
+
+/* Tipografía y Textos */
+.profile-title {
+    font-size: 0.9rem;
+}
+
+.profile-subtitle {
+    font-size: 0.75rem;
+}
+
+.table-text-sm {
+    font-size: 0.9rem;
+}
+
+.text-size-xs {
+    font-size: 0.75rem;
+}
+
+.text-size-xxs {
+    font-size: 0.72rem;
+}
+
+.col-max-text {
+    max-width: 250px;
+}
+
+.col-max-text-sm {
+    max-width: 200px;
+}
+
+/* Avatares e Íconos */
+.avatar-circle-sm {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.avatar-icon-orange {
+    background: rgba(234, 179, 8, 0.15) !important;
+    color: #eab308 !important;
+}
+
+.avatar-icon-blue {
+    background: rgba(56, 189, 248, 0.15) !important;
+    color: #38bdf8 !important;
+}
+
+.avatar-icon-indigo {
+    background: rgba(99, 102, 241, 0.15) !important;
+    color: #818cf8 !important;
+}
+
+.avatar-icon-green {
+    background: rgba(34, 197, 94, 0.15) !important;
+    color: #22c55e !important;
+}
+
+.avatar-icon-purple {
+    background: rgba(168, 85, 247, 0.2) !important;
+    color: #c084fc !important;
+}
+
+/* Modales y Botones */
+.btn-cancel-modal {
+    border-color: #64748b !important;
+}
+
+.btn-action-green {
+    background-color: #16a34a !important;
+    color: #ffffff !important;
+    border-radius: 12px;
+}
+
+.input-radius-custom {
+    border-radius: 12px !important;
+}
+
+.input-radius-sm {
+    border-radius: 10px !important;
+}
+
+.modal-content-rounded {
+    border-radius: 20px !important;
+}
+
+.modal-logout-link {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+    border-radius: 0 0 16px 16px !important;
+    transition: background-color 0.2s ease;
+    text-decoration: none !important;
+}
+
+.modal-profile-header-icon {
+    color: #22c55e;
+}
+
+.table-scrollable-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.alert-comite-admin {
+    background-color: rgba(234, 179, 8, 0.12) !important;
+}
+
+.scanner-card-box {
+    background-color: #161b22 !important;
+    border: 1px solid #30363d !important;
+}
+
+.scanner-input-box {
+    background-color: #0d1117 !important;
+    color: #ffffff !important;
+    border-color: #30363d !important;
+}
+
+
+.stat-icon-green {
+    color: #10b981 !important;
+    background: rgba(16, 185, 129, 0.15) !important;
+}
+
+.stat-icon-blue {
+    color: #3b82f6 !important;
+    background: rgba(59, 130, 246, 0.15) !important;
+}
+
+.stat-icon-purple {
+    color: #a855f7 !important;
+    background: rgba(168, 85, 247, 0.15) !important;
+}
+
+.stat-icon-yellow {
+    color: #eab308 !important;
+    background: rgba(234, 179, 8, 0.15) !important;
+}
+
+.stat-icon-emerald {
+    color: #22c55e !important;
+    background: rgba(34, 197, 94, 0.15) !important;
+}
+
+.stat-icon-red {
+    color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.15) !important;
+}
+
+.btn-pill-xs {
+    font-size: 0.78rem !important;
+}
+
+.btn-pill-xxs {
+    font-size: 0.72rem !important;
+}
+
+.badge-pill-xs {
+    font-size: 0.75rem !important;
+}
+
+
+.badge-status-presente {
+    background: rgba(34, 197, 94, 0.15) !important;
+    color: #22c55e !important;
+}
+
+.badge-status-tarde {
+    background: rgba(234, 179, 8, 0.15) !important;
+    color: #eab308 !important;
+}
+
+.badge-status-ausente {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #ef4444 !important;
+}

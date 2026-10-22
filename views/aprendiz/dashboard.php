@@ -31,36 +31,14 @@ $mensajeError = $mensajeError ?? null;
 
 <body class="portal-aprendiz-body">
 
-    <div class="dashboard-container" style="background-color: #0d1117;">
-        <aside class="sidebar">
-            <div class="sidebar-logo">
-                <i class="bi bi-shield-check"></i>
-            </div>
-            <nav class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white vh-100" style="width: 80px; position: fixed; top: 0; left: 0; z-index: 1000;">
-                <a href="index.php?action=portal_aprendiz" class="nav-link text-white active bg-dark rounded d-flex flex-column align-items-center justify-content-center py-2 mb-2" title="Inicio / Mi Portal">
-                    <i class="bi bi-house-door-fill fs-5 mb-1 text-success"></i>
-                    <span style="font-size: 9px; line-height: 1;">Inicio</span>
-                </a>
-                <a href="#modalSubirExcusa" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" data-bs-toggle="modal" data-bs-target="#modalSubirExcusa" title="Radicar Excusa">
-                    <i class="bi bi-file-earmark-medical-fill fs-5 mb-1 text-info"></i>
-                    <span style="font-size: 9px; line-height: 1;">Excusa</span>
-                </a>
-                <a href="#seccion-historial" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Historial de Asistencias">
-                    <i class="bi bi-clock-history fs-5 mb-1 text-warning"></i>
-                    <span style="font-size: 9px; line-height: 1;">Historial</span>
-                </a>
-                <a href="#seccion-excusas" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Mis Excusas Médicas">
-                    <i class="bi bi-folder-check fs-5 mb-1 text-primary"></i>
-                    <span style="font-size: 9px; line-height: 1;">Mis Excusas</span>
-                </a>
-                <a href="index.php?action=calendario" class="nav-link text-white d-flex flex-column align-items-center justify-content-center py-2 mb-2 rounded" title="Google Calendario">
-                    <i class="bi bi-calendar3 fs-5 mb-1 text-primary"></i>
-                    <span style="font-size: 9px; line-height: 1;">Calendario</span>
-                </a>
-            </nav>
-        </aside>
+    <div class="dashboard-container portal-container-bg">
+        <?php 
+        $activo = 'dashboard';
+        $rol = 'Aprendiz';
+        require_once __DIR__ . '/../partials/sidebar.php'; 
+        ?>
 
-        <main class="main-content p-0" style="background-color: transparent; min-width: 0;">
+        <main class="main-content p-0 portal-main-content">
             <nav class="navbar navbar-expand-lg navbar-aprendiz py-3 px-4">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center text-white fw-bold gap-2" href="#">
@@ -76,8 +54,8 @@ $mensajeError = $mensajeError ?? null;
                         <i class="bi bi-person-fill"></i>
                     </div>
                     <div class="text-start pe-2 d-none d-sm-block">
-                        <h6 class="fw-bold mb-0 text-white" style="font-size: 0.9rem;"><?= htmlspecialchars($datosAprendiz['nombre'] . ' ' . $datosAprendiz['apellido']); ?></h6>
-                        <span class="text-muted" style="font-size: 0.75rem;">Doc: <?= htmlspecialchars($datosAprendiz['identificacion']); ?></span>
+                        <h6 class="fw-bold mb-0 text-white user-name-title"><?= htmlspecialchars($datosAprendiz['nombre'] . ' ' . $datosAprendiz['apellido']); ?></h6>
+                        <span class="text-muted user-doc-subtitle">Doc: <?= htmlspecialchars($datosAprendiz['identificacion']); ?></span>
                     </div>
                 </div>
             </div>
@@ -85,6 +63,7 @@ $mensajeError = $mensajeError ?? null;
     </nav>
 
     <div class="container py-4">
+        <?php require_once __DIR__ . '/../partials/mensajes.php'; ?>
 
         <?php if (!empty($mensajeError)): ?>
             <div class="alert alert-warning alert-dismissible fade show py-2 px-3 small mb-4" role="alert">
@@ -113,6 +92,62 @@ $mensajeError = $mensajeError ?? null;
             </div>
         </div>
 
+        <!-- ALERTA PREVENTIVA DE INASISTENCIAS Y COMITÉ (SOLO LECTURA) -->
+        <?php if (!empty($comiteAprendiz) && in_array($comiteAprendiz['estado'], ['Pendiente', 'Citado'])): ?>
+            <div class="alert alert-danger border-danger d-flex align-items-center gap-3 p-3 mb-4 rounded-3 shadow-sm" role="alert">
+                <i class="bi bi-exclamation-octagon-fill fs-2 text-danger flex-shrink-0"></i>
+                <div>
+                    <h6 class="alert-heading fw-bold mb-1">
+                        <i class="bi bi-gavel me-1"></i> Remisión a Comité de Evaluación y Seguimiento Activa
+                    </h6>
+                    <p class="mb-1 small">
+                        Has sido remitido a Comité de Evaluación y Seguimiento por registrar <strong><?= (int)$comiteAprendiz['total_faltas']; ?> inasistencias</strong> (<?= number_format((float)$comiteAprendiz['porcentaje_fallas'], 1); ?>% de inasistencia).
+                        Estado actual: <span class="badge bg-warning text-dark fw-bold"><?= htmlspecialchars($comiteAprendiz['estado']); ?></span>.
+                    </p>
+                    <p class="mb-0 small text-white-50">
+                        <strong>Motivo reportado:</strong> <?= htmlspecialchars($comiteAprendiz['motivo']); ?> | Remitido el: <?= date('d/m/Y H:i', strtotime($comiteAprendiz['fecha_remision'])); ?> por Instructor <?= htmlspecialchars(($comiteAprendiz['instructor_nombre'] ?? '') . ' ' . ($comiteAprendiz['instructor_apellido'] ?? '')); ?>.
+                    </p>
+                </div>
+            </div>
+        <?php elseif ($totalFaltas == 2): ?>
+            <div class="alert alert-warning border-warning d-flex align-items-center gap-3 p-3 mb-4 rounded-3 shadow-sm text-white alert-comite-warning" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-2 text-warning flex-shrink-0"></i>
+                <div>
+                    <h6 class="alert-heading fw-bold mb-1 text-warning">
+                        <i class="bi bi-shield-exclamation me-1"></i> Alerta Preventiva de Inasistencias
+                    </h6>
+                    <p class="mb-0 fs-6">
+                        <strong>Tu número de faltas son 2, una más y cumples para comité.</strong>
+                    </p>
+                    <small class="text-white-50">
+                        Según el Reglamento del Aprendiz SENA, acumular 3 inasistencias injustificadas faculta al instructor para solicitar tu citación a Comité de Evaluación y Seguimiento. Si tus inasistencias obedecen a fuerza mayor o incapacidad médica, recuerda radicar tus soportes a tiempo.
+                    </small>
+                </div>
+            </div>
+        <?php elseif ($totalFaltas >= 3): ?>
+            <div class="alert alert-danger border-danger d-flex align-items-center gap-3 p-3 mb-4 rounded-3 shadow-sm text-white alert-comite-danger" role="alert">
+                <i class="bi bi-slash-circle-fill fs-2 text-danger flex-shrink-0"></i>
+                <div>
+                    <h6 class="alert-heading fw-bold mb-1 text-danger">
+                        <i class="bi bi-exclamation-diamond-fill me-1"></i> Límite de Inasistencias Superado
+                    </h6>
+                    <p class="mb-0 fs-6">
+                        <strong>Has alcanzado <?= $totalFaltas; ?> inasistencias injustificadas.</strong> Has superado el umbral permitido y tu estado se encuentra en causal de remisión a Comité de Evaluación y Seguimiento.
+                    </p>
+                    <small class="text-white-50">
+                        Comunícate con tu vocero o instructor de ficha a la mayor brevedad.
+                    </small>
+                </div>
+            </div>
+        <?php elseif ($totalFaltas == 1): ?>
+            <div class="alert alert-dark border-secondary d-flex align-items-center gap-3 p-2 mb-4 rounded-3 shadow-sm text-white-50" role="alert">
+                <i class="bi bi-info-circle fs-4 text-info flex-shrink-0 ms-1"></i>
+                <div class="small">
+                    Registras <strong class="text-white">1 inasistencia acumulada</strong>. Mantente al día con tus asistencias para evitar citaciones a comité.
+                </div>
+            </div>
+        <?php endif; ?>
+
         <div class="row g-3 mb-4">
             <div class="col-12 col-md-3">
                 <div class="card portal-card p-3 h-100 shadow-sm">
@@ -128,7 +163,7 @@ $mensajeError = $mensajeError ?? null;
                         if ($porcentajeAsistencia < 75) $barraClase = 'bg-danger';
                     ?>
                     <div class="progress progress-dark">
-                        <div class="progress-bar <?= $barraClase; ?>" role="progressbar" style="width: <?= $porcentajeAsistencia; ?>%;"></div>
+                        <div class="progress-bar <?= $barraClase; ?>" role="progressbar" data-progress="<?= $porcentajeAsistencia; ?>"></div>
                     </div>
                     <small class="text-muted mt-2 d-block">
                         <?= ($porcentajeAsistencia >= 85) ? 'Buen nivel de asistencia' : '¡Atención a tus inasistencias!'; ?>
@@ -276,39 +311,87 @@ $mensajeError = $mensajeError ?? null;
             </div>
 
             <div class="col-lg-4">
+                <?php
+                    $cntApPendientes = 0;
+                    $cntApAprobadas = 0;
+                    $cntApRechazadas = 0;
+                    if (!empty($misExcusas)) {
+                        foreach ($misExcusas as $e) {
+                            $st = $e['estado'] ?? 'Pendiente';
+                            if ($st === 'Pendiente') $cntApPendientes++;
+                            elseif ($st === 'Aprobada') $cntApAprobadas++;
+                            elseif ($st === 'Rechazada') $cntApRechazadas++;
+                        }
+                    }
+                ?>
                 <div class="card portal-card p-3 shadow-sm h-100" id="seccion-excusas">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
                         <h5 class="fw-bold text-white mb-0">
-                            <i class="bi bi-file-medical text-success me-2"></i>Excusas Médicas
+                            <i class="bi bi-folder2-open text-warning me-2"></i>Historial de Excusas
                         </h5>
                         <button class="btn btn-sm btn-sena-green rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalSubirExcusa">
                             <i class="bi bi-plus-lg me-1"></i> Radicar
                         </button>
                     </div>
 
-                    <p class="text-muted small">Consulta el estado de las justificaciones que has subido:</p>
+                    <p class="text-muted small mb-2">Seguimiento y estado de tus justificaciones médicas:</p>
 
-                    <div class="d-flex flex-column gap-2">
+                    <!-- Pestañas de Filtro Rápido -->
+                    <div class="btn-group w-100 mb-3" role="group" id="filtroExcusasAprendiz">
+                        <button type="button" class="btn btn-sm btn-outline-secondary text-white active py-1 btn-pill-xs" data-filtro="todas">Todas (<?= count($misExcusas); ?>)</button>
+                        <button type="button" class="btn btn-sm btn-outline-warning py-1 btn-pill-xs" data-filtro="pendiente">Pend. (<?= $cntApPendientes; ?>)</button>
+                        <button type="button" class="btn btn-sm btn-outline-success py-1 btn-pill-xs" data-filtro="aprobada">Aprob. (<?= $cntApAprobadas; ?>)</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger py-1 btn-pill-xs" data-filtro="rechazada">Rech. (<?= $cntApRechazadas; ?>)</button>
+                    </div>
+
+                    <div class="d-flex flex-column gap-2 excusas-scroll-list" id="listaExcusasAprendiz">
                         <?php if (!empty($misExcusas)): ?>
                             <?php foreach ($misExcusas as $exc): ?>
                                 <?php 
                                     $estExcusa = $exc['estado'] ?? 'Pendiente';
                                     $badgeExcusa = 'bg-warning text-dark';
-                                    if ($estExcusa === 'Aprobada') $badgeExcusa = 'bg-success text-white';
-                                    if ($estExcusa === 'Rechazada') $badgeExcusa = 'bg-danger text-white';
+                                    $bordeColor = '#eab308';
+                                    if ($estExcusa === 'Aprobada') {
+                                        $badgeExcusa = 'bg-success text-white';
+                                        $bordeColor = '#22c55e';
+                                    } elseif ($estExcusa === 'Rechazada') {
+                                        $badgeExcusa = 'bg-danger text-white';
+                                        $bordeColor = '#ef4444';
+                                    }
                                 ?>
-                                <div class="p-3 excusa-card-item">
+                                <div class="p-3 excusa-card-item rounded bg-dark border" data-estado="<?= strtolower($estExcusa); ?>">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span class="fw-semibold text-white small">Falta del: <?= htmlspecialchars($exc['fecha_asistencia']); ?></span>
-                                        <span class="badge rounded-pill <?= $badgeExcusa; ?> small"><?= htmlspecialchars($estExcusa); ?></span>
+                                        <span class="fw-semibold text-white small">
+                                            <i class="bi bi-calendar-x text-warning me-1"></i>Falta del: <?= htmlspecialchars($exc['fecha_asistencia']); ?>
+                                        </span>
+                                        <span class="badge rounded-pill <?= $badgeExcusa; ?> px-2 py-1 badge-text-xs">
+                                            <?= htmlspecialchars($estExcusa); ?>
+                                        </span>
                                     </div>
-                                    <p class="text-muted small mb-2"><?= htmlspecialchars($exc['observacion']); ?></p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted" style="font-size: 0.75rem;">Radicado: <?= htmlspecialchars($exc['fecha_subida']); ?></small>
-                                        <a href="public/uploads/excusas/<?= htmlspecialchars($exc['archivo']); ?>" target="_blank" class="btn btn-sm btn-outline-info rounded-pill py-0 px-2" style="font-size: 0.75rem;">
+                                    <p class="text-light small mb-2 fst-italic excusa-motivo-box">
+                                        "<?= htmlspecialchars($exc['observacion']); ?>"
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small class="text-muted user-doc-subtitle">
+                                            <i class="bi bi-clock me-1"></i>Radicado: <?= htmlspecialchars($exc['fecha_subida']); ?>
+                                        </small>
+                                        <a href="public/uploads/excusas/<?= htmlspecialchars($exc['archivo']); ?>" target="_blank" class="btn btn-sm btn-outline-info rounded-pill py-0 px-2 text-xs">
                                             <i class="bi bi-file-earmark-arrow-down"></i> Ver adjunto
                                         </a>
                                     </div>
+                                    <?php if ($estExcusa === 'Pendiente'): ?>
+                                        <div class="text-warning border-top border-secondary pt-1 mt-1 text-xxs">
+                                            <i class="bi bi-hourglass-split me-1"></i>En revisión por el instructor
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="text-muted border-top border-secondary pt-1 mt-1 text-xxs">
+                                            <i class="bi bi-shield-check <?= ($estExcusa === 'Aprobada') ? 'text-success' : 'text-danger'; ?> me-1"></i>
+                                            <?= ($estExcusa === 'Aprobada') ? 'Aprobada' : 'Rechazada'; ?> el: <?= htmlspecialchars($exc['fecha_revision'] ?? '---'); ?>
+                                            <?php if (!empty($exc['revisor_nombre'])): ?>
+                                                por <?= htmlspecialchars($exc['revisor_nombre'] . ' ' . ($exc['revisor_apellido'] ?? '')); ?>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>
                         <?php else: ?>
@@ -365,7 +448,7 @@ $mensajeError = $mensajeError ?? null;
             <div class="modal-content border-0 shadow-lg modal-content-dark">
                 <div class="modal-header border-0 pb-0">
                     <h5 class="modal-title fw-bold text-white">
-                        <i class="bi bi-person-badge-fill me-2" style="color: #22c55e;"></i>Información del Aprendiz
+                        <i class="bi bi-person-badge-fill me-2 text-sena-green"></i>Información del Aprendiz
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -391,7 +474,6 @@ $mensajeError = $mensajeError ?? null;
                     </div>
 
                     <div class="text-start px-2 mt-3">
-                        <p class="mb-2 text-white-50 small fw-semibold"><i class="bi bi-shield-check text-success me-2"></i>Estado de Sesión: <span class="text-white">Activa y Segura</span></p>
                         <p class="mb-0 text-white-50 small fw-semibold"><i class="bi bi-check2-circle text-success me-2"></i>Porcentaje Asistencia: <span class="text-white"><?= $porcentajeAsistencia; ?>%</span></p>
                     </div>
                 </div>
@@ -400,8 +482,8 @@ $mensajeError = $mensajeError ?? null;
                     <button type="button" class="btn btn-outline-warning w-50 fw-semibold rounded-3 py-2" data-bs-toggle="modal" data-bs-target="#modalEditarAprendiz">
                         <i class="bi bi-pencil-square me-1"></i> Editar Perfil
                     </button>
-                    <a class="btn btn-outline-danger w-50 fw-semibold rounded-3 py-2 d-flex align-items-center justify-content-center"
-                        style="background-color: rgba(220, 53, 69, 0.1);"
+                    <a class="btn btn-outline-danger w-50 fw-semibold rounded-3 py-2 d-flex align-items-center justify-content-center modal-avatar-red"
+                        
                         href="index.php?action=logout">
                         <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
                     </a>
@@ -434,18 +516,15 @@ $mensajeError = $mensajeError ?? null;
                         </div>
                         <div class="mb-3 text-start">
                             <label class="form-label text-white small fw-semibold">Documento de Identidad</label>
-                            <input type="text" class="form-control form-control-dark text-white" value="<?= htmlspecialchars($datosAprendiz['identificacion']); ?>" readonly disabled style="background-color: #161b22; color: #cbd5e1; -webkit-text-fill-color: #cbd5e1;">
+                            <input type="text" class="form-control form-control-dark form-control-readonly-dark text-white" value="<?= htmlspecialchars($datosAprendiz['identificacion']); ?>" readonly disabled>
                         </div>
                         <div class="mb-3 text-start">
                             <label class="form-label text-white small fw-semibold">Ficha de Formación</label>
-                            <input type="text" class="form-control form-control-dark text-white" value="Ficha <?= htmlspecialchars($datosAprendiz['numero_ficha'] ?? 'Sin asignar'); ?> - <?= htmlspecialchars($datosAprendiz['nombre_programa'] ?? 'ADSO'); ?> (<?= htmlspecialchars($datosAprendiz['jornada'] ?? 'Diurna'); ?>)" readonly disabled style="background-color: #161b22; color: #cbd5e1; -webkit-text-fill-color: #cbd5e1;">
-                        </div>
-                        <div class="p-3 rounded bg-dark border border-secondary text-light small text-start">
-                            <i class="bi bi-info-circle text-info me-1"></i> La ficha y documento son gestionados por el instructor o administración.
+                            <input type="text" class="form-control form-control-dark form-control-readonly-dark text-white" value="Ficha <?= htmlspecialchars($datosAprendiz['numero_ficha'] ?? 'Sin asignar'); ?> - <?= htmlspecialchars($datosAprendiz['nombre_programa'] ?? 'ADSO'); ?> (<?= htmlspecialchars($datosAprendiz['jornada'] ?? 'Diurna'); ?>)" readonly disabled>
                         </div>
                     </div>
                     <div class="modal-footer border-top border-secondary">
-                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4 text-white" data-bs-dismiss="modal" style="border-color: #64748b;">Cancelar</button>
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4 text-white btn-cancel-modal" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold text-white shadow-sm">Guardar Cambios</button>
                     </div>
                 </form>

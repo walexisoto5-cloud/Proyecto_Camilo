@@ -9,41 +9,17 @@
     <title>Sistema de Control de Asistencia - SENA</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <style>
-        body {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            min-height: 100vh;
-        }
-
-        .card-login {
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-sena {
-            background-color: #39a900;
-            border-color: #39a900;
-            color: #fff;
-            font-weight: 600;
-        }
-
-        .btn-sena:hover {
-            background-color: #2e8800;
-            border-color: #2e8800;
-            color: #fff;
-        }
-    </style>
+    <link rel="stylesheet" href="public/css/login.css?v=<?= file_exists('public/css/login.css') ? filemtime('public/css/login.css') : time(); ?>">
 </head>
 
 <body class="d-flex align-items-center justify-content-center p-3">
 
-    <div class="container" style="max-width: 420px;">
+    <div class="container login-container">
         <div class="card card-login bg-white p-4">
             <div class="card-body">
 
                 <div class="text-center mb-4">
-                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 70px; height: 70px;">
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-2 login-avatar-badge">
                         <i class="bi bi-person-badge text-success fs-1"></i>
                     </div>
                     <h4 class="fw-bold text-dark mb-1">Control de Asistencia</h4>

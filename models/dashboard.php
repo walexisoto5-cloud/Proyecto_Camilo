@@ -1,61 +1,89 @@
 <?php
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/Ficha.php';
+require_once __DIR__ . '/Usuario.php';
+require_once __DIR__ . '/Excusa.php';
+require_once __DIR__ . '/Horario.php';
+
+/**
+ * Modelo Dashboard - Fachada limpia para indicadores del panel principal y delegación a modelos especializados
+ */
 class Dashboard
 {
     private $conn;
+    private $fichaModel;
+    private $usuarioModel;
+    private $excusaModel;
+    private $horarioModel;
 
     public function __construct($db)
     {
         $this->conn = $db;
+        $this->fichaModel = new Ficha($db);
+        $this->usuarioModel = new Usuario($db);
+        $this->excusaModel = new Excusa($db);
+        $this->horarioModel = new Horario($db);
     }
 
-    public function obtenerTotalAprendices()
+    // =========================================================================
+    // 1. MÉTRICAS DEL PANEL DE CONTROL (ADMINISTRADOR)
+    // =========================================================================
+
+    public function obtenerTotalAprendices(): int
     {
         $sql = "SELECT COUNT(*) as total FROM aprendiz";
         $result = $this->conn->query($sql);
         $row = $result ? $result->fetch_assoc() : null;
-        return $row['total'] ?? 0;
+        return (int)($row['total'] ?? 0);
     }
 
-    public function obtenerAsistenciasHoy()
+    public function obtenerAsistenciasHoy(): int
     {
         $sql = "SELECT COUNT(*) as total FROM asistencia WHERE fecha_asistencia = CURDATE()";
         $result = $this->conn->query($sql);
         $row = $result ? $result->fetch_assoc() : null;
-        return $row['total'] ?? 0;
+        return (int)($row['total'] ?? 0);
     }
 
-    public function obtenerRetardosHoy()
+    public function obtenerRetardosHoy(): int
     {
         $sql = "SELECT COUNT(*) as total FROM asistencia WHERE fecha_asistencia = CURDATE() AND LOWER(estado_entrada) LIKE '%retardo%'";
         $result = $this->conn->query($sql);
         $row = $result ? $result->fetch_assoc() : null;
-        return $row['total'] ?? 0;
+        return (int)($row['total'] ?? 0);
     }
 
-    public function obtenerExcusasPendientes()
+    public function obtenerExcusasPendientes(): int
     {
-        $sql = "SELECT COUNT(*) as total FROM excusa WHERE LOWER(estado) = 'pendiente'";
-        $result = $this->conn->query($sql);
-        $row = $result ? $result->fetch_assoc() : null;
-        return $row['total'] ?? 0;
+        return $this->excusaModel->obtenerTotalPendientes();
     }
 
-    public function obtenerTotalFichas()
+    public function obtenerTotalFichas(): int
     {
-        $sql = "SELECT COUNT(*) as total FROM ficha";
-        $result = $this->conn->query($sql);
-        $row = $result ? $result->fetch_assoc() : null;
-        return $row['total'] ?? 0;
+        return $this->fichaModel->obtenerTotal();
     }
 
-    public function obtenerFichas()
+    public function obtenerFichas(): array
     {
-        $sql = "SELECT id_ficha, numero_ficha, nombre_programa, jornada FROM ficha ORDER BY id_ficha DESC";
-        $result = $this->conn->query($sql);
-        return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+        return $this->fichaModel->obtenerTodas();
     }
 
-    public function obtenerUltimasAsistencias($limite = 5)
+    public function obtenerFichasConConteo(int $limite = 10): array
+    {
+        return $this->fichaModel->obtenerFichasConConteo($limite);
+    }
+
+    public function obtenerTotalInstructores(): int
+    {
+        return $this->usuarioModel->obtenerTotalInstructores();
+    }
+
+    public function obtenerInstructores(int $limite = 5): array
+    {
+        return $this->usuarioModel->obtenerInstructores($limite);
+    }
+
+    public function obtenerUltimasAsistencias(int $limite = 5): array
     {
         $sql = "SELECT a.*, u.nombre, u.apellido 
                 FROM asistencia a 
@@ -76,132 +104,67 @@ class Dashboard
         return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
 
-    public function crearFicha($numeroFicha, $programa, $jornada = '')
+    // =========================================================================
+    // 2. DELEGACIÓN A MODELOS ESPECIALIZADOS
+    // =========================================================================
+
+    // Delegación a Ficha
+    public function crearFicha(string $numeroFicha, string $programa, string $jornada = 'Diurna'): bool
     {
-        $stmt = $this->conn->prepare("INSERT INTO ficha (numero_ficha, nombre_programa, jornada) VALUES (?, ?, ?)");
-        if (!$stmt) {
-            error_log("Error al preparar crearFicha: " . $this->conn->error);
-            return false;
-        }
-        $stmt->bind_param("sss", $numeroFicha, $programa, $jornada);
-        return $stmt->execute();
+        return $this->fichaModel->crear($numeroFicha, $programa, $jornada);
     }
 
-    // Asegura dinámicamente el ID del rol en la base de datos para evitar errores de clave foránea
-    private function obtenerOcrearIdRol($nombreRol)
+    // Delegación a Usuario
+    public function crearInstructor(string $identificacion, string $nombre, string $apellido, string $correo, string $contrasena): bool
     {
-        $nombreLimpio = $this->conn->real_escape_string($nombreRol);
-        $sql = "SELECT id_rol FROM rol WHERE LOWER(nombre_rol) = LOWER('$nombreLimpio') LIMIT 1";
-        $res = $this->conn->query($sql);
-
-        if ($res && $res->num_rows > 0) {
-            $fila = $res->fetch_assoc();
-            $id = (int)$fila['id_rol'];
-            $res->free();
-            return $id;
-        }
-
-        $this->conn->query("INSERT INTO rol (nombre_rol) VALUES ('$nombreLimpio')");
-        return (int)$this->conn->insert_id;
+        return $this->usuarioModel->crearInstructor($identificacion, $nombre, $apellido, $correo, $contrasena);
     }
 
-    public function crearInstructor($identificacion, $nombre, $apellido, $correo, $contrasena)
+    public function crearAprendiz(string $identificacion, string $nombre, string $apellido, string $correo, string $contrasena, int $idFicha, ?string $codigoRfid = null): bool
     {
-        $hash = password_hash($contrasena, PASSWORD_DEFAULT);
-        $idRolInstructor = $this->obtenerOcrearIdRol('Instructor');
-        
-        $sql = "INSERT INTO usuario (identificacion, nombre, apellido, nombre_usuario, contrasena, fk_rol) 
-                VALUES (?, ?, ?, ?, ?, ?)";
-                
-        $stmt = $this->conn->prepare($sql);
-
-        if (!$stmt) {
-            error_log("Error en prepare SQL crearInstructor: " . $this->conn->error);
-            return false;
-        }
-
-        $stmt->bind_param("sssssi", $identificacion, $nombre, $apellido, $correo, $hash, $idRolInstructor);
-        return $stmt->execute();
+        return $this->usuarioModel->crearAprendiz($identificacion, $nombre, $apellido, $correo, $contrasena, $idFicha, $codigoRfid);
     }
 
-    public function crearAprendiz($identificacion, $nombre, $apellido, $correo, $contrasena, $idFicha, $codigoRfid = null)
+    public function buscarOCrearInstructorPorNombre(string $nombreCompleto): ?int
     {
-        $hash = password_hash($contrasena, PASSWORD_DEFAULT);
-        $idRolAprendiz = $this->obtenerOcrearIdRol('Aprendiz');
-
-        $sqlUsuario = "INSERT INTO usuario (identificacion, nombre, apellido, nombre_usuario, contrasena, fk_rol) 
-                       VALUES (?, ?, ?, ?, ?, ?)";
-        $stmtUser = $this->conn->prepare($sqlUsuario);
-        if (!$stmtUser) {
-            error_log("Error al preparar usuario aprendiz: " . $this->conn->error);
-            return false;
-        }
-
-        $stmtUser->bind_param("sssssi", $identificacion, $nombre, $apellido, $correo, $hash, $idRolAprendiz);
-        if (!$stmtUser->execute()) {
-            error_log("Error al ejecutar usuario aprendiz: " . $stmtUser->error);
-            return false;
-        }
-
-        $idUsuario = $this->conn->insert_id;
-
-        $sqlAprendiz = "INSERT INTO aprendiz (codigo_rfid, fk_ficha, fk_usuario) VALUES (?, ?, ?)";
-        $stmtAp = $this->conn->prepare($sqlAprendiz);
-        if (!$stmtAp) {
-            error_log("Error al preparar aprendiz: " . $this->conn->error);
-            return false;
-        }
-
-        $stmtAp->bind_param("sii", $codigoRfid, $idFicha, $idUsuario);
-        return $stmtAp->execute();
+        return $this->usuarioModel->buscarOCrearInstructorPorNombre($nombreCompleto);
     }
 
-    public function guardarExcusa($documentoAprendiz, $fechaFalta, $motivo, $nombreArchivo)
+    // Delegación a Excusa
+    public function guardarExcusa(string $documentoAprendiz, string $fechaFalta, string $motivo, string $nombreArchivo): bool
     {
-        $sqlBuscar = "SELECT ap.id_aprendiz, u.id_usuario 
-                      FROM aprendiz ap 
-                      INNER JOIN usuario u ON ap.fk_usuario = u.id_usuario 
-                      WHERE u.identificacion = ? OR u.nombre_usuario = ? 
-                      LIMIT 1";
-        $stmtBuscar = $this->conn->prepare($sqlBuscar);
-        if (!$stmtBuscar) return false;
+        return $this->excusaModel->guardar($documentoAprendiz, $fechaFalta, $motivo, $nombreArchivo);
+    }
 
-        $stmtBuscar->bind_param("ss", $documentoAprendiz, $documentoAprendiz);
-        $stmtBuscar->execute();
-        $aprendiz = $stmtBuscar->get_result()->fetch_assoc();
+    // Delegación a Horario
+    public function obtenerHorariosCalendario(int $idFicha = 0): array
+    {
+        return $this->horarioModel->obtenerHorarios($idFicha);
+    }
 
-        if (!$aprendiz) {
-            error_log("No se encontró aprendiz con documento: " . $documentoAprendiz);
-            return false;
-        }
+    public function agregarBloqueCalendario(string $diaSemana, string $entrada, string $salida, int $idFicha, ?int $idInstructor = null, ?string $competencia = null, ?string $ambiente = null): bool
+    {
+        return $this->horarioModel->agregarBloque($diaSemana, $entrada, $salida, $idFicha, $idInstructor, $competencia, $ambiente);
+    }
 
-        $idAprendiz = $aprendiz['id_aprendiz'];
+    public function eliminarHorariosPorFicha(int $idFicha): bool
+    {
+        return $this->horarioModel->eliminarHorariosPorFicha($idFicha);
+    }
 
-        // Si no existe asistencia previa para esa fecha, se genera para asociar la excusa
-        $sqlAsist = "SELECT id_asistencia FROM asistencia WHERE fk_aprendiz = ? AND fecha_asistencia = ? LIMIT 1";
-        $stmtAsist = $this->conn->prepare($sqlAsist);
-        $stmtAsist->bind_param("is", $idAprendiz, $fechaFalta);
-        $stmtAsist->execute();
-        $asistRes = $stmtAsist->get_result()->fetch_assoc();
+    public function eliminarBloqueCalendario(int $idHorario): bool
+    {
+        return $this->horarioModel->eliminarBloque($idHorario);
+    }
 
-        if ($asistRes) {
-            $idAsistencia = $asistRes['id_asistencia'];
-        } else {
-            $sqlInsAsist = "INSERT INTO asistencia (fecha_asistencia, estado_entrada, estado_salida, fk_aprendiz) 
-                            VALUES (?, 'Inasistencia', 'Justificada', ?)";
-            $stmtInsAsist = $this->conn->prepare($sqlInsAsist);
-            $stmtInsAsist->bind_param("si", $fechaFalta, $idAprendiz);
-            $stmtInsAsist->execute();
-            $idAsistencia = $this->conn->insert_id;
-        }
+    public function procesarArchivoHorarioCalendario(string $rutaArchivo, string $nombreOriginal, int $idFicha, bool $sobrescribir = true): array
+    {
+        return $this->horarioModel->procesarArchivoHorario($rutaArchivo, $nombreOriginal, $idFicha, $sobrescribir);
+    }
 
-        $sqlExcusa = "INSERT INTO excusa (archivo, observacion, estado, fecha_subida, fk_asistencia) 
-                      VALUES (?, ?, 'Pendiente', CURDATE(), ?)";
-        $stmtExcusa = $this->conn->prepare($sqlExcusa);
-        if (!$stmtExcusa) return false;
-
-        $stmtExcusa->bind_param("ssi", $nombreArchivo, $motivo, $idAsistencia);
-        return $stmtExcusa->execute();
+    public function generarPlantillaCsvCalendario(): string
+    {
+        return $this->horarioModel->generarPlantillaCsv();
     }
 }
 ?>

@@ -1,17 +1,36 @@
 <?php
 
-
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/helpers.php';
 
 class InstructorController
 {
+    private function conectar()
+    {
+        $database = new Database();
+        return $database->getConnection();
+    }
+
+    private function rolesTodos(): array
+    {
+        $db = $this->conectar();
+        $res = $db->query("SELECT id_rol, nombre_rol FROM rol");
+        $roles = [];
+        if ($res) {
+            while ($r = $res->fetch_assoc()) {
+                $roles[$r['nombre_rol']] = (int)$r['id_rol'];
+            }
+        }
+        return $roles;
+    }
+
     private function verificarSesion()
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        if (empty($_SESSION['usuario_id'])) {
+        if (empty($_SESSION['usuario_id']) && empty($_SESSION['id_usuario'])) {
             header("Location: index.php?action=login");
             exit();
         }
@@ -39,6 +58,10 @@ class InstructorController
         $competenciaActiva = isset($_GET['competencia']) ? trim($_GET['competencia']) : 'ADSO - Desarrollo y Programación';
 
         $aprendicesLista = [];
+        require_once __DIR__ . '/../models/Comite.php';
+        $comiteModel = new Comite($db);
+        $aprendicesEnComite = $comiteModel->obtenerIdsAprendicesEnComiteActivo();
+
         if ($idFichaSeleccionada > 0) {
             $sqlAprendices = "SELECT ap.id_aprendiz, u.id_usuario, u.nombre, u.apellido, u.identificacion
                               FROM aprendiz ap
@@ -95,20 +118,33 @@ class InstructorController
                 $row['total_faltas'] = $totalFaltas;
                 $row['porcentaje_faltas'] = $porcentajeFaltas;
                 $row['alerta_sena'] = $alertaSena;
+                $row['en_comite'] = isset($aprendicesEnComite[$idAp]);
 
                 $aprendicesLista[] = $row;
             }
         }
 
-        $sqlExcusas = "SELECT e.*, u.nombre, u.apellido, u.identificacion, a.fecha_asistencia
+        $sqlExcusas = "SELECT e.*, u.nombre, u.apellido, u.identificacion, a.fecha_asistencia, f.numero_ficha,
+                              u_rev.nombre AS revisor_nombre, u_rev.apellido AS revisor_apellido
                        FROM excusa e
                        INNER JOIN asistencia a ON e.fk_asistencia = a.id_asistencia
                        INNER JOIN aprendiz ap ON a.fk_aprendiz = ap.id_aprendiz
+                       INNER JOIN ficha f ON ap.fk_ficha = f.id_ficha
                        INNER JOIN usuario u ON ap.fk_usuario = u.id_usuario
-                       WHERE e.estado = 'Pendiente'
-                       ORDER BY e.id_excusa DESC LIMIT 5";
+                       LEFT JOIN usuario u_rev ON e.fk_usuario_instructor = u_rev.id_usuario
+                       ORDER BY (CASE WHEN e.estado = 'Pendiente' THEN 1 ELSE 2 END), e.id_excusa DESC";
         $resExcusas = $db->query($sqlExcusas);
-        $excusasPendientes = $resExcusas ? $resExcusas->fetch_all(MYSQLI_ASSOC) : [];
+        $historialExcusas = $resExcusas ? $resExcusas->fetch_all(MYSQLI_ASSOC) : [];
+        $excusasPendientes = array_values(array_filter($historialExcusas, fn($e) => $e['estado'] === 'Pendiente'));
+
+        // Métricas de asistencia y monitoreo de aprendices para la portada del instructor
+        require_once __DIR__ . '/../models/dashboard.php';
+        $dashModel = new Dashboard($db);
+        $totalAprendices = $dashModel->obtenerTotalAprendices();
+        $asistenciasHoy = $dashModel->obtenerAsistenciasHoy();
+        $retardosHoy = $dashModel->obtenerRetardosHoy();
+        $totalFichas = count($fichas);
+        $ultimosMarcajes = $dashModel->obtenerUltimasAsistencias(6);
 
         $nombreUsuario = $_SESSION['nombre_completo'] ?? $_SESSION['nombre_usuario'] ?? 'Instructor';
         $rolUsuario = $_SESSION['rol'] ?? 'Instructor';
@@ -176,17 +212,222 @@ class InstructorController
 
             $idExcusa = (int)($_POST['id_excusa'] ?? 0);
             $nuevoEstado = ($_POST['estado'] === 'Aprobada') ? 'Aprobada' : 'Rechazada';
-            $idInstructor = (int)$_SESSION['usuario_id'];
+            $motivoRechazo = trim($_POST['motivo_rechazo'] ?? '');
+            $idInstructor = (int)($_SESSION['usuario_id'] ?? $_SESSION['id_usuario'] ?? 0);
 
             if ($idExcusa > 0) {
-                $sql = "UPDATE excusa SET estado = ?, fecha_revision = CURDATE(), fk_usuario_instructor = ? WHERE id_excusa = ?";
-                $stmt = $db->prepare($sql);
-                $stmt->bind_param("sii", $nuevoEstado, $idInstructor, $idExcusa);
+                if ($nuevoEstado === 'Rechazada' && !empty($motivoRechazo)) {
+                    $sql = "UPDATE excusa SET estado = ?, fecha_revision = CURDATE(), fk_usuario_instructor = ?, observacion = CONCAT(SUBSTRING(observacion, 1, 20), ' [Rech: ', ?, ']') WHERE id_excusa = ?";
+                    $stmt = $db->prepare($sql);
+                    $stmt->bind_param("sisi", $nuevoEstado, $idInstructor, $motivoRechazo, $idExcusa);
+                } else {
+                    $sql = "UPDATE excusa SET estado = ?, fecha_revision = CURDATE(), fk_usuario_instructor = ? WHERE id_excusa = ?";
+                    $stmt = $db->prepare($sql);
+                    $stmt->bind_param("sii", $nuevoEstado, $idInstructor, $idExcusa);
+                }
                 $stmt->execute();
+
+                // Si fue Aprobada, actualizar la asistencia asociada para reflejar 'Justificada'
+                if ($nuevoEstado === 'Aprobada') {
+                    $sqlAsist = "UPDATE asistencia a 
+                                 INNER JOIN excusa e ON a.id_asistencia = e.fk_asistencia 
+                                 SET a.estado_salida = 'Justificada' 
+                                 WHERE e.id_excusa = ?";
+                    $stmtAsist = $db->prepare($sqlAsist);
+                    if ($stmtAsist) {
+                        $stmtAsist->bind_param("i", $idExcusa);
+                        $stmtAsist->execute();
+                    }
+                }
             }
         }
 
         header("Location: index.php?action=portal_instructor&msg=excusa_actualizada");
+        exit();
+    }
+
+    // Generar y descargar reporte oficial de asistencia en PDF (delegado en ReporteController)
+    public function generarReportePdf()
+    {
+        require_once __DIR__ . '/ReporteController.php';
+        $reporteController = new ReporteController();
+        $reporteController->generarReporteAsistenciaPdf();
+    }
+
+    // Remitir a un aprendiz a Comité de Evaluación y Seguimiento
+    public function remitirComite(): void
+    {
+        $this->verificarSesion();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: index.php?action=portal_instructor");
+            exit();
+        }
+
+        $idAprendiz = (int)($_POST['id_aprendiz'] ?? 0);
+        $totalFaltas = (int)($_POST['total_faltas'] ?? 0);
+        $porcentajeFaltas = (float)($_POST['porcentaje_faltas'] ?? 0);
+        $motivo = trim($_POST['motivo'] ?? '');
+        $idInstructor = (int)($_SESSION['usuario_id'] ?? 0);
+
+        if ($idAprendiz <= 0 || empty($motivo)) {
+            header("Location: index.php?action=portal_instructor&error=" . urlencode("Debe indicar un motivo claro para la remisión a comité."));
+            exit();
+        }
+
+        $database = new Database();
+        $db = $database->getConnection();
+        require_once __DIR__ . '/../models/Comite.php';
+        $comiteModel = new Comite($db);
+
+        $ok = $comiteModel->crearRemision($idAprendiz, $idInstructor, $totalFaltas, $porcentajeFaltas, $motivo);
+
+        if ($ok) {
+            header("Location: index.php?action=portal_instructor&msg=" . urlencode("El aprendiz fue remitido exitosamente a Comité de Evaluación y Seguimiento. El caso fue notificado a la Administración."));
+        } else {
+            header("Location: index.php?action=portal_instructor&error=" . urlencode("El aprendiz ya cuenta con un caso activo en Comité o no se pudo completar la remisión."));
+        }
+        exit();
+    }
+
+    // =========================================================================
+    // GESTIÓN CRUD DE INSTRUCTORES (ADMINISTRADOR) - SRP
+    // =========================================================================
+    public function viewInstructores(): void
+    {
+        requiereRol('Administrador');
+        $db = $this->conectar();
+        $buscar = trim($_GET['buscar'] ?? '');
+        $roles = $this->rolesTodos();
+        $idRolInstructor = $roles['Instructor'] ?? 2;
+
+        $sql = "SELECT u.id_usuario, u.nombre_usuario, u.nombre, u.apellido, u.identificacion, u.telefono,
+                       IFNULL(u.estado, 'Activo') AS estado,
+                       (SELECT GROUP_CONCAT(numero_ficha SEPARATOR ', ') FROM ficha WHERE fk_usuario = u.id_usuario) AS fichas_asignadas
+                FROM usuario u
+                WHERE u.fk_rol = ?";
+        
+        $params = [$idRolInstructor];
+        $tipos = 'i';
+
+        if ($buscar !== '') {
+            $sql .= " AND (u.nombre LIKE ? OR u.apellido LIKE ? OR u.identificacion LIKE ? OR u.nombre_usuario LIKE ?)";
+            $termino = "%{$buscar}%";
+            $params = array_merge($params, [$termino, $termino, $termino, $termino]);
+            $tipos .= 'ssss';
+        }
+
+        $sql .= " ORDER BY u.nombre, u.apellido";
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param($tipos, ...$params);
+        $stmt->execute();
+        $instructores = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+        $activo = 'gestion_instructores';
+        $rol = $_SESSION['rol'] ?? 'Administrador';
+        $nombreUsuario = $_SESSION['nombre_completo'] ?? ($_SESSION['nombre'] ?? 'Administrador');
+        $rolUsuario = $rol;
+        require_once __DIR__ . '/../views/gestion/instructores.php';
+    }
+
+    public function crearInstructor(): void
+    {
+        requiereRol('Administrador');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: index.php?action=gestion_instructores");
+            exit();
+        }
+
+        $nombre = trim($_POST['nombre'] ?? '');
+        $apellido = trim($_POST['apellido'] ?? '');
+        $identificacion = trim($_POST['identificacion'] ?? '');
+        $telefono = trim($_POST['telefono'] ?? '');
+        $nombreUsuario = trim($_POST['nombre_usuario'] ?? '');
+        $contrasena = trim($_POST['contrasena'] ?? '');
+
+        if ($nombre === '' || $apellido === '' || $identificacion === '' || $nombreUsuario === '' || $contrasena === '') {
+            header("Location: index.php?action=gestion_instructores&error=" . urlencode("Todos los campos obligatorios deben ser diligenciados."));
+            exit();
+        }
+
+        $db = $this->conectar();
+
+        // Validar duplicado
+        $check = $db->prepare("SELECT id_usuario FROM usuario WHERE nombre_usuario = ? OR identificacion = ?");
+        $check->bind_param("ss", $nombreUsuario, $identificacion);
+        $check->execute();
+        if ($check->get_result()->num_rows > 0) {
+            header("Location: index.php?action=gestion_instructores&error=" . urlencode("El usuario o documento ya existe en el sistema."));
+            exit();
+        }
+
+        $hash = password_hash($contrasena, PASSWORD_DEFAULT);
+        $roles = $this->rolesTodos();
+        $fkRol = $roles['Instructor'] ?? 2;
+
+        $stmt = $db->prepare("INSERT INTO usuario (nombre_usuario, contrasena, nombre, apellido, identificacion, telefono, fk_rol, estado)
+                              VALUES (?, ?, ?, ?, ?, ?, ?, 'Activo')");
+        $stmt->bind_param("ssssssi", $nombreUsuario, $hash, $nombre, $apellido, $identificacion, $telefono, $fkRol);
+        
+        if (!$stmt->execute()) {
+            header("Location: index.php?action=gestion_instructores&error=" . urlencode($db->error));
+            exit();
+        }
+
+        header("Location: index.php?action=gestion_instructores&creado=1");
+        exit();
+    }
+
+    public function actualizarInstructor(): void
+    {
+        requiereRol('Administrador');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: index.php?action=gestion_instructores");
+            exit();
+        }
+
+        $idUsuario = (int)($_POST['id_usuario'] ?? 0);
+        $nombre = trim($_POST['nombre'] ?? '');
+        $apellido = trim($_POST['apellido'] ?? '');
+        $identificacion = trim($_POST['identificacion'] ?? '');
+        $telefono = trim($_POST['telefono'] ?? '');
+        $estado = ($_POST['estado'] ?? 'Activo') === 'Inactivo' ? 'Inactivo' : 'Activo';
+
+        if ($idUsuario <= 0) {
+            header("Location: index.php?action=gestion_instructores");
+            exit();
+        }
+
+        $db = $this->conectar();
+        $stmt = $db->prepare("UPDATE usuario SET nombre = ?, apellido = ?, identificacion = ?, telefono = ?, estado = ? WHERE id_usuario = ?");
+        $stmt->bind_param("sssssi", $nombre, $apellido, $identificacion, $telefono, $estado, $idUsuario);
+        $stmt->execute();
+
+        header("Location: index.php?action=gestion_instructores&actualizado=1");
+        exit();
+    }
+
+    public function eliminarInstructor(): void
+    {
+        requiereRol('Administrador');
+        $id = (int)($_POST['id_usuario'] ?? $_GET['id'] ?? 0);
+        if ($id > 0) {
+            $db = $this->conectar();
+            $db->query("SET FOREIGN_KEY_CHECKS = 0");
+            $stmtF = $db->prepare("UPDATE ficha SET fk_usuario = NULL WHERE fk_usuario = ?");
+            $stmtF->bind_param("i", $id);
+            $stmtF->execute();
+
+            $stmtH = $db->prepare("UPDATE horario SET fk_usuario_instructor = NULL WHERE fk_usuario_instructor = ?");
+            $stmtH->bind_param("i", $id);
+            $stmtH->execute();
+
+            $stmt = $db->prepare("DELETE FROM usuario WHERE id_usuario = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $db->query("SET FOREIGN_KEY_CHECKS = 1");
+        }
+        header("Location: index.php?action=gestion_instructores&eliminado=1");
         exit();
     }
 }
