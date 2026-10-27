@@ -79,7 +79,7 @@ $comitesPendientes = $comitesPendientes ?? 0;
 
                 <!-- Notificación de Remisiones a Comité de Evaluación y Seguimiento -->
                 <?php if (!empty($comitesPendientes) && $comitesPendientes > 0): ?>
-                    <div class="alert alert-warning border-warning d-flex flex-wrap align-items-center justify-content-between gap-3 p-3 mb-4 rounded-3 shadow-sm alert-comite-admin" role="alert">
+                    <div class="alert alert-warning border-warning alert-dismissible fade show d-flex flex-wrap align-items-center justify-content-between gap-3 p-3 mb-4 rounded-3 shadow-sm alert-comite-admin" id="alertaComiteAdmin" role="alert">
                         <div class="d-flex align-items-center gap-3">
                             <div class="p-2 rounded-circle bg-dark border border-warning text-warning">
                                 <i class="bi bi-gavel fs-4"></i>
@@ -93,9 +93,12 @@ $comitesPendientes = $comitesPendientes ?? 0;
                                 </p>
                             </div>
                         </div>
-                        <a href="index.php?action=gestion_comite&estado=Pendiente" class="btn btn-sm btn-warning text-dark fw-semibold rounded-pill px-3 text-nowrap">
-                            <i class="bi bi-arrow-right-circle me-1"></i> Ver y Gestionar Casos
-                        </a>
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="index.php?action=gestion_comite&estado=Pendiente&marcar_leido=1" id="btnIrGestionComite" class="btn btn-sm btn-warning text-dark fw-semibold rounded-pill px-3 text-nowrap">
+                                <i class="bi bi-arrow-right-circle me-1"></i> Ver y Gestionar Casos
+                            </a>
+                            <button type="button" class="btn-close btn-close-white ms-1" id="btnCerrarAlertaComite" data-bs-dismiss="alert" aria-label="Cerrar" title="Descartar alerta"></button>
+                        </div>
                     </div>
                 <?php endif; ?>
 
@@ -413,6 +416,7 @@ $comitesPendientes = $comitesPendientes ?? 0;
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="index.php?action=crear_instructor" method="POST">
+                <input type="hidden" name="origen" value="dashboard">
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-white">Documento / Identificación</label>
@@ -456,6 +460,7 @@ $comitesPendientes = $comitesPendientes ?? 0;
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="index.php?action=crearAprendiz" method="POST">
+                <input type="hidden" name="origen" value="dashboard">
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-white">Documento de Identidad</label>

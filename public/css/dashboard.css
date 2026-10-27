@@ -10,7 +10,7 @@
 .dashboard-container {
     display: flex;
     min-height: 100vh;
-    background-color: #f4f6f9; /* O el color de fondo que tengas */
+    background-color: #0d1117;
 }
 
 .dashboard-wrapper {
@@ -378,6 +378,7 @@ textarea::placeholder {
    CLASES EXTRAÍDAS DE REFACTORIZACIÓN CLEAN CODE (ZERO INLINE STYLES)
    ========================================================================= */
 
+.bg-dark-app,
 body.bg-dark-app {
     background-color: #0d1117 !important;
     color: #f3f4f6 !important;
@@ -556,6 +557,14 @@ body.bg-dark-app {
 
 .alert-comite-admin {
     background-color: rgba(234, 179, 8, 0.12) !important;
+}
+
+.badge-comite-warning,
+.badge-comite-pendiente {
+    background-color: rgba(245, 158, 11, 0.18) !important;
+    color: #f59e0b !important;
+    border: 1px solid rgba(245, 158, 11, 0.4) !important;
+    font-weight: 600;
 }
 
 .scanner-card-box {

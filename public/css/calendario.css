@@ -240,10 +240,12 @@
 }
 
 .calendar-main-content {
-    margin-left: 80px;
+    margin-left: 0 !important;
     padding: 25px;
     flex-grow: 1;
     background-color: #0d1117;
+    border-left: none !important;
+    box-shadow: none !important;
 }
 
 .btn-border-slate {
@@ -321,5 +323,38 @@
 .btn-cancel-modal {
     border-color: #64748b !important;
 }
+
+/* Modal Popups del Calendario (Horario detallado por día) */
+.modal-dia-bloque-card {
+    border-left: 4px solid #16a34a !important;
+}
+
+.modal-dia-bloque-card.bloque-segundo {
+    border-left: 4px solid #2563eb !important;
+}
+
+.modal-dia-time-badge {
+    background-color: #16a34a;
+    color: #ffffff;
+}
+
+.modal-dia-time-badge.badge-segundo {
+    background-color: #2563eb;
+}
+
+.modal-dia-titulo {
+    font-size: 0.95rem;
+}
+
+.modal-dia-desc {
+    font-size: 0.8rem;
+}
+
+.modal-dia-receso {
+    background-color: rgba(234, 179, 8, 0.12);
+    border: 1px dashed #eab308;
+    color: #fde047;
+}
+
 
 

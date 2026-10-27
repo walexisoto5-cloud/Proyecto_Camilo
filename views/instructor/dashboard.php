@@ -128,7 +128,7 @@ foreach ($fichas as $f) {
             </div>
             <script src="public/js/escaner.js"></script>
 
-        <?php else: ?>
+        <?php elseif (!isset($seccionActiva) || $seccionActiva !== 'aprendices'): ?>
 
         <!-- Encabezado de Bienvenida y Acciones Rápidas del Instructor -->
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
@@ -137,7 +137,7 @@ foreach ($fichas as $f) {
                 <p class="text-muted small mb-0">Resumen de asistencia y control diario de aprendices</p>
             </div>
             <div class="d-flex align-items-center gap-2 flex-wrap">
-                <a href="#formLlamadoLista" class="btn text-white shadow-sm fw-semibold btn-action-green">
+                <a href="index.php?action=portal_instructor&seccion=aprendices" class="btn text-white shadow-sm fw-semibold btn-action-green">
                     <i class="bi bi-check2-square me-1"></i> Llamar a Lista
                 </a>
                 <a href="index.php?action=escaner_rfid" class="btn btn-outline-info shadow-sm fw-semibold btn-radius-10">
@@ -149,17 +149,19 @@ foreach ($fichas as $f) {
         <!-- Tarjetas de Métricas de Asistencia del Instructor (Portada Oficial) -->
         <div class="row g-3 mb-4">
             <div class="col-6 col-md-4 col-xl">
-                <div class="dashboard-card stat-card card-dark-panel shadow-sm h-100">
-                    <div class="d-flex align-items-center">
-                        <div class="stat-icon me-3 p-3 rounded-circle d-flex align-items-center justify-content-center stat-icon-circle stat-icon-blue">
-                            <i class="bi bi-people-fill fs-5"></i>
-                        </div>
-                        <div>
-                            <h3 class="fw-bold mb-0 text-white"><?= $totalAprendices ?? count($aprendicesLista); ?></h3>
-                            <span class="text-muted small fw-semibold">Aprendices</span>
+                <a href="index.php?action=portal_instructor&seccion=aprendices" class="text-decoration-none">
+                    <div class="dashboard-card stat-card card-dark-panel shadow-sm h-100">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon me-3 p-3 rounded-circle d-flex align-items-center justify-content-center stat-icon-circle stat-icon-blue">
+                                <i class="bi bi-people-fill fs-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="fw-bold mb-0 text-white"><?= $totalAprendices ?? count($aprendicesLista); ?></h3>
+                                <span class="text-muted small fw-semibold">Aprendices</span>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <div class="col-6 col-md-4 col-xl">
@@ -205,7 +207,7 @@ foreach ($fichas as $f) {
             </div>
 
             <div class="col-6 col-md-4 col-xl">
-                <a href="#panel-excusas" class="text-decoration-none">
+                <a href="index.php?action=portal_instructor&seccion=aprendices#panel-excusas" class="text-decoration-none">
                     <div class="dashboard-card stat-card card-dark-panel shadow-sm h-100">
                         <div class="d-flex align-items-center">
                             <div class="stat-icon me-3 p-3 rounded-circle d-flex align-items-center justify-content-center stat-icon-circle stat-icon-red">
@@ -255,9 +257,9 @@ foreach ($fichas as $f) {
                                 $salidaReg = (string)($registro['salida'] ?? '-');
                                 $estadoLower = strtolower($estadoReg);
 
-                                $badgeStyle = ($estadoLower === 'a tiempo' || $estadoLower === 'presente' || $estadoLower === 'asistió')
-                                    ? 'background: rgba(34, 197, 94, 0.15); color: #22c55e;'
-                                    : (($estadoLower === 'retardo' || $estadoLower === 'tarde') ? 'background: rgba(234, 179, 8, 0.15); color: #eab308;' : 'background: rgba(239, 68, 68, 0.15); color: #ef4444;');
+                                $badgeClass = ($estadoLower === 'a tiempo' || $estadoLower === 'presente' || $estadoLower === 'asistió')
+                                    ? 'text-bg-success'
+                                    : (($estadoLower === 'retardo' || $estadoLower === 'tarde') ? 'text-bg-warning' : 'text-bg-danger');
                                 ?>
                                 <tr>
                                     <td class="fw-semibold text-white">
@@ -288,9 +290,30 @@ foreach ($fichas as $f) {
             </div>
         </div>
 
+        <?php else: ?>
+
+        <!-- Encabezado de la Sección de Aprendices y Toma de Asistencia -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h2 class="fw-bold mb-1 text-white">
+                    <i class="bi bi-people-fill text-info me-2"></i>Control de Asistencia de Aprendices
+                </h2>
+                <p class="text-muted small mb-0">Llamado a lista y revisión de novedades por ficha formativa</p>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <a href="index.php?action=portal_instructor" class="btn btn-outline-secondary rounded-pill px-3">
+                    <i class="bi bi-house-door me-1"></i> Volver al Inicio
+                </a>
+                <a href="index.php?action=escaner_rfid" class="btn btn-outline-info rounded-pill px-3">
+                    <i class="bi bi-upc-scan me-1"></i> Lector RFID
+                </a>
+            </div>
+        </div>
+
         <div class="card instructor-card p-3 mb-4 shadow-sm">
             <form action="index.php" method="GET" class="row g-3 align-items-end">
                 <input type="hidden" name="action" value="portal_instructor">
+                <input type="hidden" name="seccion" value="aprendices">
 
                 <div class="col-md-4">
                     <label class="form-label text-muted small fw-semibold">

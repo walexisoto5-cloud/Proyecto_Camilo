@@ -75,8 +75,8 @@ switch ($action) {
         break;
 
     case 'remitir_comite':
-        require_once __DIR__ . '/controllers/InstructorController.php';
-        $controller = new InstructorController();
+        require_once __DIR__ . '/controllers/ComiteController.php';
+        $controller = new ComiteController();
         $controller->remitirComite();
         break;
 
@@ -196,6 +196,20 @@ switch ($action) {
         $controller->viewComite();
         break;
 
+    case 'descartar_alerta_comite':
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $_SESSION['alerta_comite_descartada'] = true;
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            header('Content-Type: application/json');
+            echo json_encode(['status' => 'ok']);
+            exit();
+        }
+        header("Location: index.php?action=dashboard");
+        exit();
+        break;
+
     case 'actualizar_estado_comite':
         require_once __DIR__ . '/controllers/ComiteController.php';
         $controller = new ComiteController();
@@ -203,8 +217,8 @@ switch ($action) {
         break;
 
     case 'guardar_excusa':
-        require_once __DIR__ . '/controllers/DashboardController.php';
-        $controller = new DashboardController();
+        require_once __DIR__ . '/controllers/ExcusaController.php';
+        $controller = new ExcusaController();
         $controller->guardarExcusa();
         break;
 
@@ -215,32 +229,32 @@ switch ($action) {
         break;
 
     case 'calendario':
-        require_once __DIR__ . '/controllers/DashboardController.php';
-        $controller = new DashboardController();
+        require_once __DIR__ . '/controllers/CalendarioController.php';
+        $controller = new CalendarioController();
         $controller->mostrarCalendario();
         break;
 
     case 'importar_horario_calendario':
-        require_once __DIR__ . '/controllers/DashboardController.php';
-        $controller = new DashboardController();
+        require_once __DIR__ . '/controllers/CalendarioController.php';
+        $controller = new CalendarioController();
         $controller->importarHorarioCalendario();
         break;
 
     case 'descargar_plantilla_calendario':
-        require_once __DIR__ . '/controllers/DashboardController.php';
-        $controller = new DashboardController();
+        require_once __DIR__ . '/controllers/CalendarioController.php';
+        $controller = new CalendarioController();
         $controller->descargarPlantillaCalendario();
         break;
 
     case 'agregar_bloque_calendario':
-        require_once __DIR__ . '/controllers/DashboardController.php';
-        $controller = new DashboardController();
+        require_once __DIR__ . '/controllers/CalendarioController.php';
+        $controller = new CalendarioController();
         $controller->agregarBloqueCalendario();
         break;
 
     case 'eliminar_bloque_calendario':
-        require_once __DIR__ . '/controllers/DashboardController.php';
-        $controller = new DashboardController();
+        require_once __DIR__ . '/controllers/CalendarioController.php';
+        $controller = new CalendarioController();
         $controller->eliminarBloqueCalendario();
         break;
 

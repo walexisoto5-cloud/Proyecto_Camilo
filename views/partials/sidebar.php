@@ -51,30 +51,21 @@ if (!function_exists('renderItemNav')) {
                 <?= renderItemNav($activo, 'gestion_fichas', 'index.php?action=gestion_fichas', 'bi-journal-text', 'Fichas'); ?>
                 <?= renderItemNav($activo, 'gestion_excusas', 'index.php?action=gestion_excusas', 'bi-envelope-paper', 'Excusas'); ?>
                 <?= renderItemNav($activo, 'gestion_comite', 'index.php?action=gestion_comite', 'bi-gavel', 'Comité', 'text-warning'); ?>
-                <?= renderItemNav($activo, 'escaner', 'index.php?action=escaner_rfid', 'bi-upc-scan', 'RFID', 'text-info'); ?>
                 <?= renderItemNav($activo, 'calendario', 'index.php?action=calendario', 'bi-calendar3', 'Calendario', 'text-primary'); ?>
 
             <?php elseif ($esInstructor): ?>
                 <!-- ITEMS INSTRUCTOR -->
-                <?= renderItemNav($activo, 'dashboard', 'index.php?action=portal_instructor', 'bi-person-video3', 'Inicio', 'text-success'); ?>
-                <?= renderItemNav($activo, 'lista', 'index.php?action=portal_instructor#formLlamadoLista', 'bi-check2-square', 'Lista', 'text-info'); ?>
+                <?= renderItemNav($activo, 'dashboard', 'index.php?action=portal_instructor', 'bi-house-door-fill', 'Inicio', 'text-success'); ?>
+                <?= renderItemNav($activo, 'aprendices', 'index.php?action=portal_instructor&seccion=aprendices', 'bi-people-fill', 'Aprendices', 'text-info'); ?>
                 <?= renderItemNav($activo, 'escaner', 'index.php?action=escaner_rfid', 'bi-upc-scan', 'RFID', 'text-primary'); ?>
-                <?= renderItemNav($activo, 'excusas', 'index.php?action=portal_instructor#panel-excusas', 'bi-folder2-open', 'Excusas', 'text-warning'); ?>
                 <?= renderItemNav($activo, 'calendario', 'index.php?action=calendario', 'bi-calendar3', 'Calendario', 'text-primary'); ?>
 
             <?php else: ?>
                 <!-- ITEMS APRENDIZ -->
                 <?= renderItemNav($activo, 'dashboard', 'index.php?action=portal_aprendiz', 'bi-house-door-fill', 'Inicio', 'text-success'); ?>
-                
-                <?php if ($activo === 'dashboard' || $activo === 'portal_aprendiz'): ?>
-                    <?= renderItemNav($activo, 'radicar_excusa', '#modalSubirExcusa', 'bi-file-earmark-medical-fill', 'Radicar', 'text-info', '#modalSubirExcusa'); ?>
-                <?php else: ?>
-                    <?= renderItemNav($activo, 'radicar_excusa', 'index.php?action=portal_aprendiz', 'bi-file-earmark-medical-fill', 'Radicar', 'text-info'); ?>
-                <?php endif; ?>
-
-                <?= renderItemNav($activo, 'historial', 'index.php?action=portal_aprendiz#seccion-historial', 'bi-clock-history', 'Historial', 'text-secondary'); ?>
-                <?= renderItemNav($activo, 'mis_excusas', 'index.php?action=portal_aprendiz#seccion-excusas', 'bi-folder2-open', 'Excusas', 'text-warning'); ?>
-                <?= renderItemNav($activo, 'calendario', 'index.php?action=calendario', 'bi-calendar3', 'Calendario', 'text-primary'); ?>
+                <?= renderItemNav($activo, 'historial', 'index.php?action=portal_aprendiz&seccion=historial', 'bi-clock-history', 'Historial', 'text-info'); ?>
+                <?= renderItemNav($activo, 'escaner', 'index.php?action=escaner_rfid', 'bi-upc-scan', 'RFID', 'text-primary'); ?>
+                <?= renderItemNav($activo, 'calendario', 'index.php?action=calendario', 'bi-calendar3', 'Calendario', 'text-warning'); ?>
 
             <?php endif; ?>
 

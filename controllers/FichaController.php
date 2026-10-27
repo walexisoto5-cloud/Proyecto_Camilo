@@ -174,7 +174,7 @@ class FichaController
         }
 
         header("Location: " . $redirectOk);
-        exit();
+            exit();
     }
 
     public function eliminarFicha(): void

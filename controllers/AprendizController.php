@@ -42,23 +42,13 @@ class AprendizController
     {
         $this->verificarSesion();
 
-        $database = new Database();
-        $db = $database->getConnection();
         $idUsuario = (int)$_SESSION['usuario_id'];
+        require_once __DIR__ . '/../models/Aprendiz.php';
+        $aprendizModel = new Aprendiz($this->conectar());
 
-        //Obtener los datos del aprendiz y la ficha a la que pertenece
-        $sqlAprendiz = "SELECT ap.id_aprendiz, ap.fk_ficha, ap.codigo_rfid, 
-                               f.numero_ficha, f.nombre_programa, f.jornada,
-                               u.nombre, u.apellido, u.identificacion, u.nombre_usuario
-                        FROM aprendiz ap
-                        INNER JOIN usuario u ON ap.fk_usuario = u.id_usuario
-                        LEFT JOIN ficha f ON ap.fk_ficha = f.id_ficha
-                        WHERE u.id_usuario = ? LIMIT 1";
+        $seccionActiva = $_GET['seccion'] ?? 'resumen';
 
-        $stmtAp = $db->prepare($sqlAprendiz);
-        $stmtAp->bind_param("i", $idUsuario);
-        $stmtAp->execute();
-        $datosAprendiz = $stmtAp->get_result()->fetch_assoc();
+        $datosAprendiz = $aprendizModel->obtenerPorUsuario($idUsuario);
 
         if (!$datosAprendiz) {
             $nombreSesion = $_SESSION['nombre_completo'] ?? 'Usuario Demo';
@@ -88,75 +78,19 @@ class AprendizController
         }
 
         $idAprendiz = (int)$datosAprendiz['id_aprendiz'];
+        $resumen = $aprendizModel->obtenerResumenPortal($idAprendiz);
 
-        $sqlTotal = "SELECT COUNT(*) as total FROM asistencia WHERE fk_aprendiz = ?";
-        $stmtTotal = $db->prepare($sqlTotal);
-        $stmtTotal->bind_param("i", $idAprendiz);
-        $stmtTotal->execute();
-        $totalSesiones = (int)($stmtTotal->get_result()->fetch_assoc()['total'] ?? 0);
-
-        $sqlAsistencias = "SELECT COUNT(*) as total FROM asistencia 
-                           WHERE fk_aprendiz = ? AND (LOWER(estado_entrada) = 'a tiempo' OR LOWER(estado_entrada) = 'presente')";
-        $stmtAsist = $db->prepare($sqlAsistencias);
-        $stmtAsist->bind_param("i", $idAprendiz);
-        $stmtAsist->execute();
-        $totalAsistencias = (int)($stmtAsist->get_result()->fetch_assoc()['total'] ?? 0);
-
-        $sqlRetardos = "SELECT COUNT(*) as total FROM asistencia 
-                        WHERE fk_aprendiz = ? AND LOWER(estado_entrada) LIKE '%retardo%'";
-        $stmtRet = $db->prepare($sqlRetardos);
-        $stmtRet->bind_param("i", $idAprendiz);
-        $stmtRet->execute();
-        $totalRetardos = (int)($stmtRet->get_result()->fetch_assoc()['total'] ?? 0);
-
-        $sqlFaltas = "SELECT COUNT(*) as total FROM asistencia 
-                      WHERE fk_aprendiz = ? AND (LOWER(estado_entrada) LIKE '%inasistencia%' OR LOWER(estado_entrada) LIKE '%ausente%' OR LOWER(estado_entrada) LIKE '%falta%')";
-        $stmtFaltas = $db->prepare($sqlFaltas);
-        $stmtFaltas->bind_param("i", $idAprendiz);
-        $stmtFaltas->execute();
-        $totalFaltas = (int)($stmtFaltas->get_result()->fetch_assoc()['total'] ?? 0);
-
-        $asistenciasValidas = $totalAsistencias + $totalRetardos;
-        if ($totalSesiones > 0) {
-            $porcentajeAsistencia = round(($asistenciasValidas / $totalSesiones) * 100);
-        } else {
-            $porcentajeAsistencia = 100;
-        }
-
-        $hoy = date('Y-m-d');
-        $sqlHoy = "SELECT * FROM asistencia WHERE fk_aprendiz = ? AND fecha_asistencia = ? LIMIT 1";
-        $stmtHoy = $db->prepare($sqlHoy);
-        $stmtHoy->bind_param("is", $idAprendiz, $hoy);
-        $stmtHoy->execute();
-        $asistenciaHoy = $stmtHoy->get_result()->fetch_assoc();
-
-        $sqlHistorial = "SELECT a.*, f.nombre_programa, 
-                                u_inst.nombre AS nombre_instructor, u_inst.apellido AS apellido_instructor
-                         FROM asistencia a
-                         LEFT JOIN aprendiz ap ON a.fk_aprendiz = ap.id_aprendiz
-                         LEFT JOIN ficha f ON ap.fk_ficha = f.id_ficha
-                         LEFT JOIN usuario u_inst ON f.fk_usuario = u_inst.id_usuario
-                         WHERE a.fk_aprendiz = ?
-                         ORDER BY a.fecha_asistencia DESC, a.entrada DESC";
-        $stmtHist = $db->prepare($sqlHistorial);
-        $stmtHist->bind_param("i", $idAprendiz);
-        $stmtHist->execute();
-        $historial = $stmtHist->get_result()->fetch_all(MYSQLI_ASSOC);
-
-        $sqlExcusas = "SELECT e.*, a.fecha_asistencia, 
-                              u_rev.nombre AS revisor_nombre, u_rev.apellido AS revisor_apellido
-                       FROM excusa e
-                       INNER JOIN asistencia a ON e.fk_asistencia = a.id_asistencia
-                       LEFT JOIN usuario u_rev ON e.fk_usuario_instructor = u_rev.id_usuario
-                       WHERE a.fk_aprendiz = ?
-                       ORDER BY (CASE WHEN e.estado = 'Pendiente' THEN 1 ELSE 2 END), e.id_excusa DESC";
-        $stmtExc = $db->prepare($sqlExcusas);
-        $stmtExc->bind_param("i", $idAprendiz);
-        $stmtExc->execute();
-        $misExcusas = $stmtExc->get_result()->fetch_all(MYSQLI_ASSOC);
+        $totalSesiones = $resumen['totalSesiones'];
+        $totalAsistencias = $resumen['totalAsistencias'];
+        $totalRetardos = $resumen['totalRetardos'];
+        $totalFaltas = $resumen['totalFaltas'];
+        $porcentajeAsistencia = $resumen['porcentajeAsistencia'];
+        $asistenciaHoy = $resumen['asistenciaHoy'];
+        $historial = $resumen['historial'];
+        $misExcusas = $resumen['misExcusas'];
 
         require_once __DIR__ . '/../models/Comite.php';
-        $comiteModel = new Comite($db);
+        $comiteModel = new Comite($this->conectar());
         $comiteAprendiz = $comiteModel->obtenerPorAprendiz($idAprendiz);
 
         require_once __DIR__ . '/../views/aprendiz/dashboard.php';
@@ -266,27 +200,31 @@ class AprendizController
     public function crearAprendiz(): void
     {
         requiereRol('Administrador');
+        $origen = trim($_POST['origen'] ?? '');
+        $redirectOk = ($origen === 'dashboard') ? "index.php?action=dashboard&creado=1" : "index.php?action=gestion_aprendices&creado=1";
+        $redirectError = ($origen === 'dashboard') ? "index.php?action=dashboard&error=" : "index.php?action=gestion_aprendices&error=";
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header("Location: index.php?action=gestion_aprendices");
+            header("Location: " . $redirectOk);
             exit();
         }
 
         $nombre = trim($_POST['nombre'] ?? '');
         $apellido = trim($_POST['apellido'] ?? '');
-        $identificacion = trim($_POST['identificacion'] ?? '');
+        $identificacion = trim($_POST['identificacion'] ?? $_POST['documento'] ?? '');
         $telefono = trim($_POST['telefono'] ?? '');
         $nombreUsuario = trim($_POST['nombre_usuario'] ?? '');
         $contrasena = trim($_POST['contrasena'] ?? '');
         $rfid = trim($_POST['codigo_rfid'] ?? '');
-        $idFicha = (int)($_POST['fk_ficha'] ?? 0);
+        $idFicha = (int)($_POST['fk_ficha'] ?? $_POST['id_ficha'] ?? 0);
 
         if ($nombre === '' || $apellido === '' || $identificacion === '' || $nombreUsuario === '' || $contrasena === '') {
-            header("Location: index.php?action=gestion_aprendices&error=" . urlencode("Todos los campos obligatorios deben ser diligenciados."));
+            header("Location: " . $redirectError . urlencode("Todos los campos obligatorios deben ser diligenciados."));
             exit();
         }
 
         if ($idFicha <= 0) {
-            header("Location: index.php?action=gestion_aprendices&error=" . urlencode("Debes asignar una ficha de formación al aprendiz."));
+            header("Location: " . $redirectError . urlencode("Debes asignar una ficha de formación al aprendiz."));
             exit();
         }
 
@@ -297,7 +235,7 @@ class AprendizController
         $checkStmt->bind_param("ss", $nombreUsuario, $identificacion);
         $checkStmt->execute();
         if ($checkStmt->get_result()->num_rows > 0) {
-            header("Location: index.php?action=gestion_aprendices&error=" . urlencode("El nombre de usuario o documento ya se encuentra registrado."));
+            header("Location: " . $redirectError . urlencode("El nombre de usuario o documento ya se encuentra registrado."));
             exit();
         }
 
@@ -311,7 +249,7 @@ class AprendizController
         $stmt->bind_param("ssssssi", $nombreUsuario, $hash, $nombre, $apellido, $identificacion, $telefono, $fkRolAprendiz);
         
         if (!$stmt->execute()) {
-            header("Location: index.php?action=gestion_aprendices&error=" . urlencode($db->error));
+            header("Location: " . $redirectError . urlencode($db->error));
             exit();
         }
         $idUsuario = (int)$db->insert_id;
@@ -320,7 +258,7 @@ class AprendizController
         $stmtAp->bind_param("sii", $rfidValor, $idFicha, $idUsuario);
         $stmtAp->execute();
 
-        header("Location: index.php?action=gestion_aprendices&creado=1");
+        header("Location: " . $redirectOk);
         exit();
     }
 
@@ -344,89 +282,16 @@ class AprendizController
             exit();
         }
 
-        $rutaTmp = $_FILES['archivo_csv']['tmp_name'];
-        $lineas = file($rutaTmp, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        require_once __DIR__ . '/../models/Aprendiz.php';
+        $aprendizModel = new Aprendiz($this->conectar());
+        $res = $aprendizModel->importarDesdeCsv($_FILES['archivo_csv']['tmp_name'], $idFicha);
 
-        if (empty($lineas)) {
-            header("Location: index.php?action=gestion_aprendices&error=" . urlencode("El archivo CSV se encuentra vacío."));
+        if (!$res['exito']) {
+            header("Location: index.php?action=gestion_aprendices&error=" . urlencode($res['mensaje'] ?? 'Error al procesar el archivo.'));
             exit();
         }
 
-        $db = $this->conectar();
-        $roles = $this->rolesTodos();
-        $fkRolAprendiz = $roles['Aprendiz'] ?? 3;
-
-        $importados = 0;
-        $omitidos = 0;
-
-        foreach ($lineas as $idx => $linea) {
-            $delim = (strpos($linea, ';') !== false) ? ';' : ',';
-            $datos = str_getcsv(trim($linea), $delim);
-
-            if (empty($datos) || count($datos) < 3) {
-                continue;
-            }
-
-            if ($idx === 0 && (stripos($datos[0], 'identificacion') !== false || stripos($datos[0], 'documento') !== false || stripos($datos[1], 'nombre') !== false)) {
-                continue;
-            }
-
-            $identificacion = trim($datos[0] ?? '');
-            $nombre = trim($datos[1] ?? '');
-            $apellido = trim($datos[2] ?? '');
-            $usuario = trim($datos[3] ?? '');
-            $telefono = trim($datos[4] ?? '');
-            $rfid = trim($datos[5] ?? '');
-
-            if ($identificacion === '' || $nombre === '' || $apellido === '') {
-                $omitidos++;
-                continue;
-            }
-
-            if ($usuario === '') {
-                $usuario = $identificacion;
-            }
-
-            $rfidValor = ($rfid === '') ? null : $rfid;
-
-            $checkUser = $db->prepare("SELECT id_usuario FROM usuario WHERE identificacion = ? OR nombre_usuario = ?");
-            $checkUser->bind_param("ss", $identificacion, $usuario);
-            $checkUser->execute();
-            $userRes = $checkUser->get_result()->fetch_assoc();
-
-            if ($userRes) {
-                $idUsuario = (int)$userRes['id_usuario'];
-                $checkAp = $db->prepare("SELECT id_aprendiz FROM aprendiz WHERE fk_usuario = ?");
-                $checkAp->bind_param("i", $idUsuario);
-                $checkAp->execute();
-                $apRes = $checkAp->get_result()->fetch_assoc();
-
-                if (!$apRes) {
-                    $insAp = $db->prepare("INSERT INTO aprendiz (codigo_rfid, fk_ficha, fk_usuario) VALUES (?, ?, ?)");
-                    $insAp->bind_param("sii", $rfidValor, $idFicha, $idUsuario);
-                    $insAp->execute();
-                    $importados++;
-                } else {
-                    $omitidos++;
-                }
-            } else {
-                $hash = password_hash($identificacion, PASSWORD_DEFAULT);
-                $insUser = $db->prepare("INSERT INTO usuario (nombre_usuario, contrasena, nombre, apellido, identificacion, telefono, fk_rol, estado)
-                                         VALUES (?, ?, ?, ?, ?, ?, ?, 'Activo')");
-                $insUser->bind_param("ssssssi", $usuario, $hash, $nombre, $apellido, $identificacion, $telefono, $fkRolAprendiz);
-                if ($insUser->execute()) {
-                    $idUsuario = (int)$db->insert_id;
-                    $insAp = $db->prepare("INSERT INTO aprendiz (codigo_rfid, fk_ficha, fk_usuario) VALUES (?, ?, ?)");
-                    $insAp->bind_param("sii", $rfidValor, $idFicha, $idUsuario);
-                    $insAp->execute();
-                    $importados++;
-                } else {
-                    $omitidos++;
-                }
-            }
-        }
-
-        header("Location: index.php?action=gestion_aprendices&creado=1&msg=" . urlencode("Se importaron {$importados} aprendices correctamente. ({$omitidos} omitidos o ya existentes)."));
+        header("Location: index.php?action=gestion_aprendices&creado=1&msg=" . urlencode("Se importaron {$res['importados']} aprendices correctamente. ({$res['omitidos']} omitidos o ya existentes)."));
         exit();
     }
 

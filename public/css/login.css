@@ -1,33 +1,42 @@
-body {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+/* ==========================================================================
+   ESTILOS COMPLEMENTARIOS PARA EL LOGIN (BASADO EN BOOTSTRAP 5)
+   ========================================================================== */
+
+/* Fondo suave con degradado radial oscuro sutil */
+body.bg-dark {
+    background: radial-gradient(circle at 50% 25%, #0f241a 0%, #0d1117 55%, #04070a 100%) !important;
     min-height: 100vh;
 }
 
-.card-login {
-    border: none;
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+/* Transición suave y enfoque con tono verde SENA para inputs */
+.form-floating > .form-control:focus {
+    border-color: #22c55e !important;
+    box-shadow: 0 0 0 0.25rem rgba(34, 197, 94, 0.2) !important;
 }
 
-.btn-sena {
-    background-color: #39a900;
-    border-color: #39a900;
-    color: #fff;
-    font-weight: 600;
+/* Ajuste fino para el botón toggle de password con input-group y form-floating */
+.input-group .btn-outline-secondary {
+    border-color: var(--bs-border-color);
 }
 
-.btn-sena:hover {
-    background-color: #2e8800;
-    border-color: #2e8800;
-    color: #fff;
+.input-group .btn-outline-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #22c55e;
 }
 
-
-.login-container {
-    max-width: 420px;
+/* Botón principal SENA con micro-interacción */
+.btn-success {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+    border: none !important;
+    transition: all 0.2s ease-in-out;
 }
 
-.login-avatar-badge {
-    width: 70px;
-    height: 70px;
+.btn-success:hover {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.35) !important;
+}
+
+.btn-success:active {
+    transform: translateY(0);
 }

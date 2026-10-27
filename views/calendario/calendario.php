@@ -24,6 +24,59 @@ foreach ($horarios as $h) {
     }
 }
 
+// Cálculo dinámico de mes y año
+$mesActual = isset($mesActual) ? (int)$mesActual : (int)date('n');
+$anioActual = isset($anioActual) ? (int)$anioActual : (int)date('Y');
+
+$mesesNombres = [
+    1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+    5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+    9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+];
+
+$primerDiaTimestamp = mktime(0, 0, 0, $mesActual, 1, $anioActual);
+$totalDiasMes = (int)date('t', $primerDiaTimestamp);
+$diaSemanaInicio = (int)date('N', $primerDiaTimestamp); // 1 = Lunes, 7 = Domingo
+
+// Mes anterior
+$mesAnterior = $mesActual - 1;
+$anioAnterior = $anioActual;
+if ($mesAnterior < 1) {
+    $mesAnterior = 12;
+    $anioAnterior--;
+}
+$totalDiasMesAnterior = (int)date('t', mktime(0, 0, 0, $mesAnterior, 1, $anioAnterior));
+
+// Mes siguiente
+$mesSiguiente = $mesActual + 1;
+$anioSiguiente = $anioActual;
+if ($mesSiguiente > 12) {
+    $mesSiguiente = 1;
+    $anioSiguiente++;
+}
+
+// Festivos oficiales Colombia
+$festivosColombia = [
+    '2026-01-01' => 'Año Nuevo',
+    '2026-01-12' => 'Reyes Magos',
+    '2026-03-23' => 'San José',
+    '2026-04-02' => 'Jueves Santo',
+    '2026-04-03' => 'Viernes Santo',
+    '2026-05-01' => 'Día del Trabajo',
+    '2026-05-18' => 'Ascensión de Jesús',
+    '2026-06-08' => 'Corpus Christi',
+    '2026-06-15' => 'Sagrado Corazón',
+    '2026-06-29' => 'San Pedro y San Pablo',
+    '2026-07-20' => 'Día de la Independencia',
+    '2026-08-07' => 'Batalla de Boyacá',
+    '2026-08-17' => 'Asunción de la Virgen',
+    '2026-10-12' => 'Día de la Raza',
+    '2026-11-02' => 'Todos los Santos',
+    '2026-11-16' => 'Independencia de Cartagena',
+    '2026-12-08' => 'Inmaculada Concepción',
+    '2026-12-25' => 'Navidad'
+];
+
 // Determinamos la ruta de retorno según el rol actual
 $urlInicio = 'index.php?action=dashboard';
 if ($rolUsuario === 'Instructor') {
@@ -45,9 +98,9 @@ if ($rolUsuario === 'Instructor') {
     <link rel="stylesheet" href="public/css/calendario.css?v=<?= file_exists('public/css/calendario.css') ? filemtime('public/css/calendario.css') : time(); ?>">
 </head>
 
-<body class="calendar-body">
+<body class="calendar-body bg-dark-app">
 
-    <div class="dashboard-container bg-dark-app min-vh-100">
+    <div class="dashboard-container dashboard-container-dark min-vh-100">
 
         <!-- Sidebar unificado de navegación modular -->
         <?php 
@@ -205,16 +258,16 @@ if ($rolUsuario === 'Instructor') {
                         <!-- Barra de controles y pestañas de vista -->
                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3 pb-3 border-bottom border-secondary">
                             <div class="d-flex align-items-center gap-2">
-                                <button type="button" class="btn btn-sm btn-outline-secondary text-white rounded-pill px-3 btn-border-slate" id="btnMesAnterior">
+                                <button type="button" class="btn btn-sm btn-outline-secondary text-white rounded-pill px-3 btn-border-slate" id="btnMesAnterior" title="Mes anterior">
                                     <i class="bi bi-chevron-left"></i>
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary text-white rounded-pill px-3 btn-border-slate" id="btnMesSiguiente">
+                                <button type="button" class="btn btn-sm btn-outline-secondary text-white rounded-pill px-3 btn-border-slate" id="btnMesSiguiente" title="Mes siguiente">
                                     <i class="bi bi-chevron-right"></i>
                                 </button>
                                 <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" id="btnHoy">
                                     Hoy
                                 </button>
-                                <h5 class="fw-bold text-white mb-0 ms-2" id="labelMesActual">Octubre 2026</h5>
+                                <h5 class="fw-bold text-white mb-0 ms-2" id="labelMesActual"><?= htmlspecialchars($mesesNombres[$mesActual] . ' ' . $anioActual); ?></h5>
                             </div>
 
                             <div class="btn-group" role="group">
@@ -240,35 +293,44 @@ if ($rolUsuario === 'Instructor') {
                             </div>
 
                             <!-- Grid Calendario SENA -->
-                            <div class="calendar-grid-body">
+                            <div class="calendar-grid-body" id="gridCalendarioBody">
                                 <?php
                                 $diasNombreMap = [
                                     1 => 'Lunes', 2 => 'Martes', 3 => 'Miércoles',
                                     4 => 'Jueves', 5 => 'Viernes', 6 => 'Sábado', 7 => 'Domingo'
                                 ];
+
+                                // 1. Celdas de relleno del mes anterior
+                                $celdasPrevias = $diaSemanaInicio - 1;
+                                for ($k = $celdasPrevias; $k >= 1; $k--):
+                                    $diaPrevNum = $totalDiasMesAnterior - $k + 1;
                                 ?>
-                                <div class="calendar-day-cell other-month">
-                                    <span class="day-number">28</span>
-                                </div>
-                                <div class="calendar-day-cell other-month">
-                                    <span class="day-number">29</span>
-                                </div>
-                                <div class="calendar-day-cell other-month">
-                                    <span class="day-number">30</span>
-                                </div>
+                                    <div class="calendar-day-cell other-month">
+                                        <span class="day-number"><?= $diaPrevNum; ?></span>
+                                    </div>
+                                <?php endfor; ?>
 
                                 <?php
-                                for ($dia = 1; $dia <= 31; $dia++):
-                                    $fechaActualIso = sprintf('2026-10-%02d', $dia);
-                                    $numDiaSemana = (int)date('N', strtotime($fechaActualIso));
+                                // 2. Días del mes actual
+                                $diaHoyNum = (int)date('j');
+                                $mesHoyNum = (int)date('n');
+                                $anioHoyNum = (int)date('Y');
+
+                                for ($dia = 1; $dia <= $totalDiasMes; $dia++):
+                                    $fechaActualIso = sprintf('%04d-%02d-%02d', $anioActual, $mesActual, $dia);
+                                    $timestampDia = mktime(0, 0, 0, $mesActual, $dia, $anioActual);
+                                    $numDiaSemana = (int)date('N', $timestampDia);
                                     $nombreDiaSemana = $diasNombreMap[$numDiaSemana] ?? '';
                                     $bloquesDelDia = $horariosPorDia[$nombreDiaSemana] ?? [];
-                                    $esHoy = ($dia === 7);
+                                    $esHoy = ($dia === $diaHoyNum && $mesActual === $mesHoyNum && $anioActual === $anioHoyNum);
+                                    $esFestivo = isset($festivosColombia[$fechaActualIso]);
+                                    $nombreFestivo = $esFestivo ? $festivosColombia[$fechaActualIso] : '';
 
                                     $infoDiaJson = htmlspecialchars(json_encode([
-                                        'fecha' => sprintf('%02d de Octubre de 2026', $dia),
+                                        'fecha' => sprintf('%02d de %s de %04d', $dia, $mesesNombres[$mesActual], $anioActual),
                                         'dia_semana' => $nombreDiaSemana,
                                         'bloques' => $bloquesDelDia,
+                                        'festivo' => $nombreFestivo,
                                         'ficha' => $fichaActual ? ('Ficha ' . $fichaActual['numero_ficha'] . ' - ' . $fichaActual['nombre_programa']) : 'General'
                                     ]), ENT_QUOTES, 'UTF-8');
                                 ?>
@@ -282,7 +344,11 @@ if ($rolUsuario === 'Instructor') {
                                             <?php endif; ?>
                                         </div>
 
-                                        <?php if (!empty($bloquesDelDia)): ?>
+                                        <?php if ($esFestivo): ?>
+                                            <div class="event-badge event-danger-custom mb-1" title="<?= htmlspecialchars($nombreFestivo); ?>">
+                                                <i class="bi bi-flag-fill me-1"></i> <?= htmlspecialchars($nombreFestivo); ?>
+                                            </div>
+                                        <?php elseif (!empty($bloquesDelDia)): ?>
                                             <?php foreach ($bloquesDelDia as $blk): ?>
                                                 <div class="event-badge <?= (substr($blk['entrada'], 0, 2) < '09') ? 'event-sena' : 'event-blue event-google'; ?> mb-1" 
                                                      title="<?= htmlspecialchars(($blk['instructor_nombre'] ?? 'Instructor') . ' - ' . ($blk['competencia'] ?? 'Formación')); ?>">
@@ -296,10 +362,16 @@ if ($rolUsuario === 'Instructor') {
                                     </div>
                                 <?php endfor; ?>
 
-                                <!-- Días del siguiente mes -->
-                                <div class="calendar-day-cell other-month">
-                                    <span class="day-number">1</span>
-                                </div>
+                                <?php
+                                // 3. Celdas de relleno del mes siguiente
+                                $totalCeldasRenderizadas = $celdasPrevias + $totalDiasMes;
+                                $celdasSiguientes = (7 - ($totalCeldasRenderizadas % 7)) % 7;
+                                for ($s = 1; $s <= $celdasSiguientes; $s++):
+                                ?>
+                                    <div class="calendar-day-cell other-month">
+                                        <span class="day-number"><?= $s; ?></span>
+                                    </div>
+                                <?php endfor; ?>
                             </div>
                         </div>
 
@@ -670,7 +742,17 @@ if ($rolUsuario === 'Instructor') {
     <!-- Bootstrap & SweetAlert2 & JS Modular -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="public/js/calendario.js"></script>
+    <script>
+        window.CALENDARIO_CONFIG = {
+            mes: <?= (int)$mesActual; ?>,
+            anio: <?= (int)$anioActual; ?>,
+            fichaId: <?= (int)$idFichaSeleccionada; ?>,
+            fichaTexto: <?= json_encode($fichaActual ? ('Ficha ' . $fichaActual['numero_ficha'] . ' - ' . $fichaActual['nombre_programa']) : 'General'); ?>,
+            horariosPorDia: <?= json_encode($horariosPorDia); ?>,
+            festivos: <?= json_encode($festivosColombia); ?>
+        };
+    </script>
+    <script src="public/js/calendario.js?v=<?= file_exists('public/js/calendario.js') ? filemtime('public/js/calendario.js') : time(); ?>"></script>
 </body>
 
 </html>

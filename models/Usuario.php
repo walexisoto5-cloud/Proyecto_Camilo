@@ -26,7 +26,7 @@ class Usuario
         $query = "SELECT u.*, r.nombre_rol 
                   FROM usuario u 
                   INNER JOIN rol r ON u.fk_rol = r.id_rol 
-                  WHERE u.nombre_usuario = ? LIMIT 1";
+                  WHERE u.nombre_usuario = ? OR u.identificacion = ? LIMIT 1";
         
         $stmt = $this->conn->prepare($query);
 
@@ -35,7 +35,7 @@ class Usuario
             return null;
         }
 
-        $stmt->bind_param("s", $nombre_usuario);
+        $stmt->bind_param("ss", $nombre_usuario, $nombre_usuario);
         $stmt->execute();
         $resultado = $stmt->get_result();
         

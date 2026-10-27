@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Guardar nuevo evento desde el modal
+    // 3. Guardar nuevo evento desde el modal
     if (formNuevoEvento) {
         formNuevoEvento.addEventListener('submit', function (e) {
             e.preventDefault();
@@ -182,143 +182,291 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // 5. Clic en los días del calendario para ver el horario completo y sus instructores
-    document.querySelectorAll('.celda-dia-click').forEach(cell => {
-        cell.addEventListener('click', function () {
-            const rawData = this.getAttribute('data-dia-info');
-            if (!rawData) return;
+    // 4. Modal con detalles del día
+    function mostrarModalDia(rawData) {
+        let info;
+        try {
+            info = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
+        } catch (err) {
+            console.error("Error parseando data-dia-info:", err);
+            return;
+        }
 
-            let info;
-            try {
-                info = JSON.parse(rawData);
-            } catch (err) {
-                console.error("Error parseando data-dia-info:", err);
-                return;
-            }
+        const fecha = info.fecha || 'Fecha';
+        const diaSemana = info.dia_semana || '';
+        const ficha = info.ficha || 'Ficha';
+        const bloques = info.bloques || [];
+        const festivo = info.festivo || '';
 
-            const fecha = info.fecha || 'Fecha';
-            const diaSemana = info.dia_semana || '';
-            const ficha = info.ficha || 'Ficha';
-            const bloques = info.bloques || [];
+        let contenidoHtml = `
+            <div class="text-start mb-3">
+                <span class="badge bg-success rounded-pill px-3 py-1 mb-2">${diaSemana}</span>
+                <h6 class="text-white-50 small mb-0"><i class="bi bi-journal-bookmark me-1 text-warning"></i>${ficha}</h6>
+            </div>
+        `;
 
-            let contenidoHtml = `
-                <div class="text-start mb-3">
-                    <span class="badge bg-success rounded-pill px-3 py-1 mb-2">${diaSemana}</span>
-                    <h6 class="text-white-50 small mb-0"><i class="bi bi-journal-bookmark me-1 text-warning"></i>${ficha}</h6>
+        if (festivo) {
+            contenidoHtml += `
+                <div class="p-3 rounded bg-dark border border-danger text-center text-white mb-2">
+                    <i class="bi bi-flag-fill fs-2 text-danger d-block mb-1"></i>
+                    <h6 class="fw-bold text-danger mb-1">${festivo}</h6>
+                    <small class="text-white-50">Día festivo oficial en Colombia. No hay formación presencial programada.</small>
+                </div>
+            `;
+        } else if (bloques.length === 0) {
+            contenidoHtml += `
+                <div class="p-3 rounded bg-dark border border-secondary text-center text-white-50">
+                    <i class="bi bi-calendar-x fs-2 text-warning d-block mb-1"></i>
+                    No hay sesiones de formación programadas para este día (${diaSemana}).
+                </div>
+            `;
+        } else {
+            contenidoHtml += `<div class="d-flex flex-column gap-2">`;
+            
+            bloques.forEach((b, index) => {
+                const horaIni = (b.entrada || '').substring(0, 5);
+                const horaFin = (b.salida || '').substring(0, 5);
+                const esPrimerBloque = (horaIni < '09');
+                const cardClass = esPrimerBloque ? 'modal-dia-bloque-card' : 'modal-dia-bloque-card bloque-segundo';
+                const badgeClass = esPrimerBloque ? 'modal-dia-time-badge' : 'modal-dia-time-badge badge-segundo';
+                const iconColor = esPrimerBloque ? 'text-success' : 'text-primary';
+
+                contenidoHtml += `
+                    <div class="p-3 rounded bg-dark border border-secondary text-start ${cardClass}">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="badge ${badgeClass}">
+                                <i class="bi bi-clock me-1"></i>${horaIni} - ${horaFin}
+                            </span>
+                            <small class="text-white-50">${b.ambiente || 'Ambiente 204'}</small>
+                        </div>
+                        <h6 class="text-white fw-bold mb-1 modal-dia-titulo">
+                            <i class="bi bi-person-badge-fill ${iconColor} me-1"></i>${b.instructor_nombre || 'Por Asignar'}
+                        </h6>
+                        <p class="text-white-50 small mb-0 modal-dia-desc">
+                            <i class="bi bi-book-fill text-secondary me-1"></i>${b.competencia || 'Formación Técnica ADSO'}
+                        </p>
+                    </div>
+                `;
+
+                // Mostrar el receso intermedio de 08:45 a 09:15
+                if (index === 0 && bloques.length > 1) {
+                    contenidoHtml += `
+                        <div class="py-1 px-3 rounded text-center small fw-semibold modal-dia-receso">
+                            ☕ 08:45 AM - 09:15 AM: Receso / Descanso de Formación
+                        </div>
+                    `;
+                }
+            });
+
+            contenidoHtml += `</div>`;
+        }
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: `<span class="text-white fs-5 fw-bold"><i class="bi bi-calendar-event text-success me-2"></i>Horario: ${fecha}</span>`,
+                html: contenidoHtml,
+                showConfirmButton: true,
+                confirmButtonText: 'Cerrar',
+                confirmButtonColor: '#16a34a',
+                background: '#161b22',
+                color: '#ffffff',
+                width: '560px'
+            });
+        }
+    }
+
+    // 5. Enlace de clics en las celdas y badges
+    function enlazarEventosCeldas() {
+        document.querySelectorAll('.celda-dia-click').forEach(cell => {
+            cell.onclick = function () {
+                const rawData = this.getAttribute('data-dia-info');
+                if (!rawData) return;
+                mostrarModalDia(rawData);
+            };
+        });
+
+        document.querySelectorAll('.event-badge').forEach(badge => {
+            badge.onclick = function (e) {
+                e.stopPropagation();
+                const parentCell = this.closest('.celda-dia-click');
+                if (parentCell) {
+                    parentCell.click();
+                }
+            };
+        });
+
+        aplicarFiltrosCategorias();
+    }
+
+    // 6. Configuración y renderizado dinámico de mes / año
+    const config = window.CALENDARIO_CONFIG || {};
+    let mesActual = parseInt(config.mes, 10) || (new Date().getMonth() + 1);
+    let anioActual = parseInt(config.anio, 10) || new Date().getFullYear();
+    const fichaId = config.fichaId || 0;
+    const fichaTexto = config.fichaTexto || 'General';
+    const horariosPorDia = config.horariosPorDia || {};
+    const festivos = config.festivos || {};
+
+    const mesesNombres = [
+        '', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+
+    const diasNombreMap = {
+        1: 'Lunes', 2: 'Martes', 3: 'Miércoles',
+        4: 'Jueves', 5: 'Viernes', 6: 'Sábado', 0: 'Domingo'
+    };
+
+    function renderCalendarioMes(mes, anio) {
+        mesActual = mes;
+        anioActual = anio;
+
+        if (labelMesActual) {
+            labelMesActual.innerText = `${mesesNombres[mesActual]} ${anioActual}`;
+        }
+
+        // Actualizar URL sin recargar
+        const nuevaUrl = `index.php?action=calendario&id_ficha=${fichaId}&mes=${mesActual}&anio=${anioActual}`;
+        window.history.replaceState({}, document.title, nuevaUrl);
+
+        const gridBody = document.getElementById('gridCalendarioBody');
+        if (!gridBody) return;
+
+        gridBody.innerHTML = '';
+
+        // Días del mes actual
+        const totalDiasMes = new Date(anioActual, mesActual, 0).getDate();
+        // Primer día de la semana (Lunes = 1 .. Domingo = 7)
+        const diaSemanaInicioJs = new Date(anioActual, mesActual - 1, 1).getDay();
+        const diaSemanaInicio = (diaSemanaInicioJs === 0) ? 7 : diaSemanaInicioJs;
+
+        // Días del mes anterior
+        const totalDiasMesAnterior = new Date(anioActual, mesActual - 1, 0).getDate();
+
+        // 1. Celdas del mes anterior
+        const celdasPrevias = diaSemanaInicio - 1;
+        for (let k = celdasPrevias; k >= 1; k--) {
+            const diaPrevNum = totalDiasMesAnterior - k + 1;
+            const cell = document.createElement('div');
+            cell.className = 'calendar-day-cell other-month';
+            cell.innerHTML = `<span class="day-number">${diaPrevNum}</span>`;
+            gridBody.appendChild(cell);
+        }
+
+        // 2. Días del mes actual
+        const hoy = new Date();
+        const diaHoyNum = hoy.getDate();
+        const mesHoyNum = hoy.getMonth() + 1;
+        const anioHoyNum = hoy.getFullYear();
+
+        for (let dia = 1; dia <= totalDiasMes; dia++) {
+            const mm = String(mesActual).padStart(2, '0');
+            const dd = String(dia).padStart(2, '0');
+            const fechaIso = `${anioActual}-${mm}-${dd}`;
+            const dateObj = new Date(anioActual, mesActual - 1, dia);
+            const numDiaSemanaJs = dateObj.getDay();
+            const nombreDiaSemana = diasNombreMap[numDiaSemanaJs] || '';
+            const bloquesDelDia = horariosPorDia[nombreDiaSemana] || [];
+            const esHoy = (dia === diaHoyNum && mesActual === mesHoyNum && anioActual === anioHoyNum);
+            const esFestivo = !!festivos[fechaIso];
+            const nombreFestivo = esFestivo ? festivos[fechaIso] : '';
+
+            const infoDia = {
+                fecha: `${dd} de ${mesesNombres[mesActual]} de ${anioActual}`,
+                dia_semana: nombreDiaSemana,
+                bloques: bloquesDelDia,
+                festivo: nombreFestivo,
+                ficha: fichaTexto
+            };
+
+            const cell = document.createElement('div');
+            cell.className = `calendar-day-cell ${esHoy ? 'today' : ''} celda-dia-click`;
+            cell.setAttribute('data-dia-info', JSON.stringify(infoDia));
+            cell.setAttribute('title', 'Haz clic para ver instructores y horario de este día');
+
+            let innerHtml = `
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="day-number mb-0">${dia}</span>
+                    ${esHoy ? '<span class="badge bg-success rounded-pill badge-today">HOY</span>' : ''}
                 </div>
             `;
 
-            if (bloques.length === 0) {
-                contenidoHtml += `
-                    <div class="p-3 rounded bg-dark border border-secondary text-center text-white-50">
-                        <i class="bi bi-calendar-x fs-2 text-warning d-block mb-1"></i>
-                        No hay sesiones de formación programadas para este día (${diaSemana}).
+            if (esFestivo) {
+                innerHtml += `
+                    <div class="event-badge event-danger-custom mb-1" title="${nombreFestivo}">
+                        <i class="bi bi-flag-fill me-1"></i> ${nombreFestivo}
                     </div>
                 `;
-            } else {
-                contenidoHtml += `<div class="d-flex flex-column gap-2">`;
-                
-                bloques.forEach((b, index) => {
-                    const horaIni = (b.entrada || '').substring(0, 5);
-                    const horaFin = (b.salida || '').substring(0, 5);
-                    const esPrimerBloque = (horaIni < '09');
-                    const badgeColor = esPrimerBloque ? '#16a34a' : '#2563eb';
-                    const iconColor = esPrimerBloque ? 'text-success' : 'text-primary';
-
-                    contenidoHtml += `
-                        <div class="p-3 rounded bg-dark border border-secondary text-start" style="border-left: 4px solid ${badgeColor} !important;">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="badge" style="background-color: ${badgeColor}; color: #ffffff;">
-                                    <i class="bi bi-clock me-1"></i>${horaIni} - ${horaFin}
-                                </span>
-                                <small class="text-white-50">${b.ambiente || 'Ambiente 204'}</small>
-                            </div>
-                            <h6 class="text-white fw-bold mb-1" style="font-size: 0.95rem;">
-                                <i class="bi bi-person-badge-fill ${iconColor} me-1"></i>${b.instructor_nombre || 'Por Asignar'}
-                            </h6>
-                            <p class="text-white-50 small mb-0" style="font-size: 0.8rem;">
-                                <i class="bi bi-book-fill text-secondary me-1"></i>${b.competencia || 'Formación Técnica ADSO'}
-                            </p>
+            } else if (bloquesDelDia.length > 0) {
+                bloquesDelDia.forEach(blk => {
+                    const horaIni = (blk.entrada || '').substring(0, 5);
+                    const claseEstilo = (horaIni < '09') ? 'event-sena' : 'event-blue event-google';
+                    const primerNombre = blk.instructor_nombre ? blk.instructor_nombre.trim().split(' ')[0] : 'Clase';
+                    const competencia = blk.competencia || 'Formación';
+                    innerHtml += `
+                        <div class="event-badge ${claseEstilo} mb-1" title="${blk.instructor_nombre || 'Instructor'} - ${competencia}">
+                            <span class="fw-bold">${horaIni}</span> ${primerNombre}
                         </div>
                     `;
-
-                    // Mostrar el receso entre bloques
-                    if (index === 0 && bloques.length > 1) {
-                        contenidoHtml += `
-                            <div class="py-1 px-3 rounded text-center small fw-semibold" style="background-color: rgba(234, 179, 8, 0.12); border: 1px dashed #eab308; color: #fde047;">
-                                ☕ 08:45 AM - 09:15 AM: Receso / Descanso de Formación
-                            </div>
-                        `;
-                    }
                 });
-
-                contenidoHtml += `</div>`;
+            } else if (nombreDiaSemana === 'Domingo') {
+                innerHtml += `<small class="text-white-50 text-descanso-sm">Descanso</small>`;
             }
 
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: `<span class="text-white fs-5 fw-bold"><i class="bi bi-calendar-event text-success me-2"></i>Horario: ${fecha}</span>`,
-                    html: contenidoHtml,
-                    showConfirmButton: true,
-                    confirmButtonText: 'Cerrar',
-                    confirmButtonColor: '#16a34a',
-                    background: '#161b22',
-                    color: '#ffffff',
-                    width: '560px'
-                });
-            }
-        });
-    });
+            cell.innerHTML = innerHtml;
+            gridBody.appendChild(cell);
+        }
 
-    // Clic en los badges pequeños dentro de la celda
-    document.querySelectorAll('.event-badge').forEach(badge => {
-        badge.addEventListener('click', function (e) {
-            e.stopPropagation(); // Permitir que la celda principal maneje el clic o muestre el popup completo
-            const parentCell = this.closest('.celda-dia-click');
-            if (parentCell) {
-                parentCell.click();
-            }
-        });
-    });
+        // 3. Celdas del mes siguiente
+        const totalCeldasRenderizadas = celdasPrevias + totalDiasMes;
+        const celdasSiguientes = (7 - (totalCeldasRenderizadas % 7)) % 7;
+        for (let s = 1; s <= celdasSiguientes; s++) {
+            const cell = document.createElement('div');
+            cell.className = 'calendar-day-cell other-month';
+            cell.innerHTML = `<span class="day-number">${s}</span>`;
+            gridBody.appendChild(cell);
+        }
 
-    // 6. Navegación de meses
-    let mesActualIndex = 9; // Octubre (base 0)
-    const meses = [
-        'Enero 2026', 'Febrero 2026', 'Marzo 2026', 'Abril 2026',
-        'Mayo 2026', 'Junio 2026', 'Julio 2026', 'Agosto 2026',
-        'Septiembre 2026', 'Octubre 2026', 'Noviembre 2026', 'Diciembre 2026'
-    ];
+        enlazarEventosCeldas();
+    }
 
-    if (btnMesAnterior && labelMesActual) {
+    // Botones de navegación de mes
+    if (btnMesAnterior) {
         btnMesAnterior.addEventListener('click', function () {
-            if (mesActualIndex > 0) {
-                mesActualIndex--;
-                labelMesActual.innerText = meses[mesActualIndex];
+            let nuevoMes = mesActual - 1;
+            let nuevoAnio = anioActual;
+            if (nuevoMes < 1) {
+                nuevoMes = 12;
+                nuevoAnio--;
             }
+            renderCalendarioMes(nuevoMes, nuevoAnio);
         });
     }
 
-    if (btnMesSiguiente && labelMesActual) {
+    if (btnMesSiguiente) {
         btnMesSiguiente.addEventListener('click', function () {
-            if (mesActualIndex < meses.length - 1) {
-                mesActualIndex++;
-                labelMesActual.innerText = meses[mesActualIndex];
+            let nuevoMes = mesActual + 1;
+            let nuevoAnio = anioActual;
+            if (nuevoMes > 12) {
+                nuevoMes = 1;
+                nuevoAnio++;
             }
+            renderCalendarioMes(nuevoMes, nuevoAnio);
         });
     }
 
-    if (btnHoy && labelMesActual) {
+    if (btnHoy) {
         btnHoy.addEventListener('click', function () {
-            mesActualIndex = 9; // Octubre 2026
-            labelMesActual.innerText = meses[mesActualIndex];
+            const hoy = new Date();
+            renderCalendarioMes(hoy.getMonth() + 1, hoy.getFullYear());
         });
     }
 
     // 7. Filtros de categorías
-    const checkboxes = document.querySelectorAll('.calendar-sidebar input[type="checkbox"]');
-    checkboxes.forEach(chk => {
-        chk.addEventListener('change', function () {
-            const val = this.value;
+    function aplicarFiltrosCategorias() {
+        const checkboxes = document.querySelectorAll('.calendar-sidebar input[type="checkbox"]');
+        checkboxes.forEach(chk => {
+            const val = chk.value;
             let selector = '';
             if (val === 'clases') selector = '.event-sena';
             if (val === 'asistencias') selector = '.event-google';
@@ -332,6 +480,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             }
         });
+    }
+
+    const checkboxes = document.querySelectorAll('.calendar-sidebar input[type="checkbox"]');
+    checkboxes.forEach(chk => {
+        chk.addEventListener('change', aplicarFiltrosCategorias);
     });
 
     // 8. Spinner al procesar Excel
@@ -345,4 +498,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // Inicializar listeners en la vista precargada
+    enlazarEventosCeldas();
 });

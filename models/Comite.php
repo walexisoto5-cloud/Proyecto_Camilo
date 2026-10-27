@@ -155,11 +155,19 @@ class Comite
 
     /**
      * Actualiza el estado y resolución de un caso de comité por parte del administrador
+     * Compatible con PDO y MySQLi
      */
     public function actualizarEstado(int $idComite, string $nuevoEstado, string $observacionAdmin = ''): bool
     {
         $ahora = date('Y-m-d H:i:s');
         $sql = "UPDATE comite SET estado = ?, observacion_admin = ?, fecha_resolucion = ? WHERE id_comite = ?";
+
+        if ($this->conn instanceof PDO) {
+            $stmt = $this->conn->prepare($sql);
+            if (!$stmt) return false;
+            return $stmt->execute([$nuevoEstado, $observacionAdmin, $ahora, $idComite]);
+        }
+
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) return false;
 

@@ -230,27 +230,65 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 6. Población de datos en modal de gestión de Casos de Comité
     const modalGestionComite = document.getElementById('modalGestionarComite');
-    if (modalGestionComite && typeof bootstrap !== 'undefined') {
-        const bsModalComite = new bootstrap.Modal(modalGestionComite);
-        const inputId = document.getElementById('gestionarIdComite');
-        const nombreEl = document.getElementById('gestionarNombreAprendiz');
-        const docEl = document.getElementById('gestionarDocAprendiz');
-        const fichaEl = document.getElementById('gestionarFichaAprendiz');
-        const motivoEl = document.getElementById('gestionarMotivoAprendiz');
-        const estadoSelect = document.getElementById('gestionarEstado');
-        const obsEl = document.getElementById('gestionarObservacion');
+    if (modalGestionComite) {
+        const poblarModalComite = (btn) => {
+            if (!btn) return;
+            const inputId = document.getElementById('gestionarIdComite');
+            const nombreEl = document.getElementById('gestionarNombreAprendiz');
+            const docEl = document.getElementById('gestionarDocAprendiz');
+            const fichaEl = document.getElementById('gestionarFichaAprendiz');
+            const motivoEl = document.getElementById('gestionarMotivoAprendiz');
+            const estadoSelect = document.getElementById('gestionarEstado');
+            const obsEl = document.getElementById('gestionarObservacion');
+
+            if (inputId) inputId.value = btn.getAttribute('data-id') || '';
+            if (nombreEl) nombreEl.textContent = btn.getAttribute('data-aprendiz') || '';
+            if (docEl) docEl.textContent = btn.getAttribute('data-doc') || '---';
+            if (fichaEl) fichaEl.textContent = btn.getAttribute('data-ficha') || '---';
+            if (motivoEl) motivoEl.textContent = btn.getAttribute('data-motivo') || '---';
+            if (estadoSelect) {
+                const estadoActual = btn.getAttribute('data-estado') || 'Pendiente';
+                // Si el caso está en Pendiente, preseleccionar Citado para que al guardar pase de estado automáticamente
+                estadoSelect.value = (estadoActual === 'Pendiente') ? 'Citado' : estadoActual;
+            }
+            if (obsEl) obsEl.value = btn.getAttribute('data-obs') || '';
+        };
+
+        modalGestionComite.addEventListener('show.bs.modal', function (event) {
+            const btn = event.relatedTarget || document.querySelector('.btn-gestionar-caso:focus');
+            poblarModalComite(btn);
+        });
 
         document.querySelectorAll('.btn-gestionar-caso').forEach(btn => {
             btn.addEventListener('click', function () {
-                if (inputId) inputId.value = this.getAttribute('data-id') || '';
-                if (nombreEl) nombreEl.textContent = this.getAttribute('data-aprendiz') || '';
-                if (docEl) docEl.textContent = this.getAttribute('data-doc') || '---';
-                if (fichaEl) fichaEl.textContent = this.getAttribute('data-ficha') || '---';
-                if (motivoEl) motivoEl.textContent = this.getAttribute('data-motivo') || '---';
-                if (estadoSelect) estadoSelect.value = this.getAttribute('data-estado') || 'Pendiente';
-                if (obsEl) obsEl.value = this.getAttribute('data-obs') || '';
-                bsModalComite.show();
+                poblarModalComite(this);
             });
         });
+    }
+
+    // 7. Descarte y control de persistencia de la Alerta de Comité en el Dashboard
+    const alertaComite = document.getElementById('alertaComiteAdmin');
+    if (alertaComite) {
+        if (sessionStorage.getItem('sena_alerta_comite_descartada') === '1') {
+            alertaComite.style.display = 'none';
+        }
+
+        const descartarAlerta = () => {
+            sessionStorage.setItem('sena_alerta_comite_descartada', '1');
+            fetch('index.php?action=descartar_alerta_comite', {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            }).catch(() => {});
+        };
+
+        const btnCerrar = document.getElementById('btnCerrarAlertaComite');
+        if (btnCerrar) {
+            btnCerrar.addEventListener('click', descartarAlerta);
+        }
+
+        const btnIr = document.getElementById('btnIrGestionComite');
+        if (btnIr) {
+            btnIr.addEventListener('click', descartarAlerta);
+        }
     }
 });

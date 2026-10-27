@@ -63,58 +63,43 @@ class InstructorController
         $aprendicesEnComite = $comiteModel->obtenerIdsAprendicesEnComiteActivo();
 
         if ($idFichaSeleccionada > 0) {
-            $sqlAprendices = "SELECT ap.id_aprendiz, u.id_usuario, u.nombre, u.apellido, u.identificacion
+            $sqlAprendices = "SELECT ap.id_aprendiz, u.id_usuario, u.nombre, u.apellido, u.identificacion,
+                                     a_hoy.id_asistencia, a_hoy.estado_entrada, a_hoy.estado_salida,
+                                     COUNT(a_tot.id_asistencia) AS total_sesiones,
+                                     SUM(CASE WHEN LOWER(a_tot.estado_entrada) LIKE '%ausente%' 
+                                                OR LOWER(a_tot.estado_entrada) LIKE '%falta%' 
+                                                OR LOWER(a_tot.estado_entrada) LIKE '%inasistencia%' 
+                                              THEN 1 ELSE 0 END) AS total_faltas
                               FROM aprendiz ap
                               INNER JOIN usuario u ON ap.fk_usuario = u.id_usuario
+                              LEFT JOIN asistencia a_hoy ON a_hoy.fk_aprendiz = ap.id_aprendiz AND a_hoy.fecha_asistencia = ?
+                              LEFT JOIN asistencia a_tot ON a_tot.fk_aprendiz = ap.id_aprendiz
                               WHERE ap.fk_ficha = ?
+                              GROUP BY ap.id_aprendiz, u.id_usuario, u.nombre, u.apellido, u.identificacion, a_hoy.id_asistencia, a_hoy.estado_entrada, a_hoy.estado_salida
                               ORDER BY u.apellido ASC, u.nombre ASC";
             $stmtAp = $db->prepare($sqlAprendices);
-            $stmtAp->bind_param("i", $idFichaSeleccionada);
+            $stmtAp->bind_param("si", $fechaSeleccionada, $idFichaSeleccionada);
             $stmtAp->execute();
             $resAp = $stmtAp->get_result();
 
             while ($row = $resAp->fetch_assoc()) {
                 $idAp = (int)$row['id_aprendiz'];
 
-                $sqlAsistHoy = "SELECT id_asistencia, entrada, salida, estado_entrada, estado_salida 
-                                FROM asistencia 
-                                WHERE fk_aprendiz = ? AND fecha_asistencia = ? LIMIT 1";
-                $stmtHoy = $db->prepare($sqlAsistHoy);
-                $stmtHoy->bind_param("is", $idAp, $fechaSeleccionada);
-                $stmtHoy->execute();
-                $asistHoy = $stmtHoy->get_result()->fetch_assoc();
-
                 $estadoActual = 'Presente';
-                if ($asistHoy) {
-                    $est = strtolower($asistHoy['estado_entrada'] ?? '');
-                    if (strpos($est, 'retardo') !== false || strpos($est, 'tarde') !== false) {
-                        $estadoActual = 'Tarde';
-                    } else if (strpos($est, 'ausente') !== false || strpos($est, 'falta') !== false || strpos($est, 'inasistencia') !== false) {
-                        $estadoActual = 'Ausente';
-                    } else {
-                        $estadoActual = 'Presente';
-                    }
+                $est = strtolower($row['estado_entrada'] ?? '');
+                if (strpos($est, 'retardo') !== false || strpos($est, 'tarde') !== false) {
+                    $estadoActual = 'Tarde';
+                } elseif (strpos($est, 'ausente') !== false || strpos($est, 'falta') !== false || strpos($est, 'inasistencia') !== false) {
+                    $estadoActual = 'Ausente';
                 }
 
-                // Cálculo de Inasistencias y Alerta del 15% según Reglamento SENA
-                $sqlTot = "SELECT COUNT(*) as total FROM asistencia WHERE fk_aprendiz = ?";
-                $stmtTot = $db->prepare($sqlTot);
-                $stmtTot->bind_param("i", $idAp);
-                $stmtTot->execute();
-                $totalSesiones = (int)($stmtTot->get_result()->fetch_assoc()['total'] ?? 0);
-
-                $sqlFaltas = "SELECT COUNT(*) as faltas FROM asistencia 
-                              WHERE fk_aprendiz = ? AND (LOWER(estado_entrada) LIKE '%ausente%' OR LOWER(estado_entrada) LIKE '%falta%' OR LOWER(estado_entrada) LIKE '%inasistencia%')";
-                $stmtFaltas = $db->prepare($sqlFaltas);
-                $stmtFaltas->bind_param("i", $idAp);
-                $stmtFaltas->execute();
-                $totalFaltas = (int)($stmtFaltas->get_result()->fetch_assoc()['faltas'] ?? 0);
-
+                $totalSesiones = (int)($row['total_sesiones'] ?? 0);
+                $totalFaltas = (int)($row['total_faltas'] ?? 0);
                 $porcentajeFaltas = ($totalSesiones > 0) ? round(($totalFaltas / $totalSesiones) * 100) : 0;
                 $alertaSena = ($porcentajeFaltas >= 15 || $totalFaltas >= 3);
 
                 $row['estado_actual'] = $estadoActual;
-                $row['asistencia_id'] = $asistHoy['id_asistencia'] ?? null;
+                $row['asistencia_id'] = $row['id_asistencia'] ?? null;
                 $row['total_faltas'] = $totalFaltas;
                 $row['porcentaje_faltas'] = $porcentajeFaltas;
                 $row['alerta_sena'] = $alertaSena;
@@ -148,6 +133,8 @@ class InstructorController
 
         $nombreUsuario = $_SESSION['nombre_completo'] ?? $_SESSION['nombre_usuario'] ?? 'Instructor';
         $rolUsuario = $_SESSION['rol'] ?? 'Instructor';
+        $seccionActiva = isset($_GET['seccion']) ? trim($_GET['seccion']) : 'resumen';
+        $activo = ($seccionActiva === 'aprendices') ? 'aprendices' : 'dashboard';
 
         require_once __DIR__ . '/../views/instructor/dashboard.php';
     }
@@ -196,7 +183,7 @@ class InstructorController
                 }
             }
 
-            header("Location: index.php?action=portal_instructor&ficha_id=" . $idFicha . "&fecha=" . urlencode($fecha) . "&guardado=1");
+            header("Location: index.php?action=portal_instructor&seccion=aprendices&ficha_id=" . $idFicha . "&fecha=" . urlencode($fecha) . "&guardado=1");
             exit();
         }
     }
@@ -242,51 +229,7 @@ class InstructorController
             }
         }
 
-        header("Location: index.php?action=portal_instructor&msg=excusa_actualizada");
-        exit();
-    }
-
-    // Generar y descargar reporte oficial de asistencia en PDF (delegado en ReporteController)
-    public function generarReportePdf()
-    {
-        require_once __DIR__ . '/ReporteController.php';
-        $reporteController = new ReporteController();
-        $reporteController->generarReporteAsistenciaPdf();
-    }
-
-    // Remitir a un aprendiz a Comité de Evaluación y Seguimiento
-    public function remitirComite(): void
-    {
-        $this->verificarSesion();
-
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header("Location: index.php?action=portal_instructor");
-            exit();
-        }
-
-        $idAprendiz = (int)($_POST['id_aprendiz'] ?? 0);
-        $totalFaltas = (int)($_POST['total_faltas'] ?? 0);
-        $porcentajeFaltas = (float)($_POST['porcentaje_faltas'] ?? 0);
-        $motivo = trim($_POST['motivo'] ?? '');
-        $idInstructor = (int)($_SESSION['usuario_id'] ?? 0);
-
-        if ($idAprendiz <= 0 || empty($motivo)) {
-            header("Location: index.php?action=portal_instructor&error=" . urlencode("Debe indicar un motivo claro para la remisión a comité."));
-            exit();
-        }
-
-        $database = new Database();
-        $db = $database->getConnection();
-        require_once __DIR__ . '/../models/Comite.php';
-        $comiteModel = new Comite($db);
-
-        $ok = $comiteModel->crearRemision($idAprendiz, $idInstructor, $totalFaltas, $porcentajeFaltas, $motivo);
-
-        if ($ok) {
-            header("Location: index.php?action=portal_instructor&msg=" . urlencode("El aprendiz fue remitido exitosamente a Comité de Evaluación y Seguimiento. El caso fue notificado a la Administración."));
-        } else {
-            header("Location: index.php?action=portal_instructor&error=" . urlencode("El aprendiz ya cuenta con un caso activo en Comité o no se pudo completar la remisión."));
-        }
+        header("Location: index.php?action=portal_instructor&seccion=aprendices&msg=excusa_actualizada");
         exit();
     }
 
@@ -333,20 +276,24 @@ class InstructorController
     public function crearInstructor(): void
     {
         requiereRol('Administrador');
+        $origen = trim($_POST['origen'] ?? '');
+        $redirectOk = ($origen === 'dashboard') ? "index.php?action=dashboard&creado=1" : "index.php?action=gestion_instructores&creado=1";
+        $redirectError = ($origen === 'dashboard') ? "index.php?action=dashboard&error=" : "index.php?action=gestion_instructores&error=";
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header("Location: index.php?action=gestion_instructores");
+            header("Location: " . $redirectOk);
             exit();
         }
 
         $nombre = trim($_POST['nombre'] ?? '');
         $apellido = trim($_POST['apellido'] ?? '');
-        $identificacion = trim($_POST['identificacion'] ?? '');
+        $identificacion = trim($_POST['identificacion'] ?? $_POST['documento'] ?? '');
         $telefono = trim($_POST['telefono'] ?? '');
-        $nombreUsuario = trim($_POST['nombre_usuario'] ?? '');
+        $nombreUsuario = trim($_POST['nombre_usuario'] ?? $_POST['correo'] ?? '');
         $contrasena = trim($_POST['contrasena'] ?? '');
 
         if ($nombre === '' || $apellido === '' || $identificacion === '' || $nombreUsuario === '' || $contrasena === '') {
-            header("Location: index.php?action=gestion_instructores&error=" . urlencode("Todos los campos obligatorios deben ser diligenciados."));
+            header("Location: " . $redirectError . urlencode("Todos los campos obligatorios deben ser diligenciados."));
             exit();
         }
 
@@ -357,7 +304,7 @@ class InstructorController
         $check->bind_param("ss", $nombreUsuario, $identificacion);
         $check->execute();
         if ($check->get_result()->num_rows > 0) {
-            header("Location: index.php?action=gestion_instructores&error=" . urlencode("El usuario o documento ya existe en el sistema."));
+            header("Location: " . $redirectError . urlencode("El usuario o documento ya existe en el sistema."));
             exit();
         }
 
@@ -370,11 +317,11 @@ class InstructorController
         $stmt->bind_param("ssssssi", $nombreUsuario, $hash, $nombre, $apellido, $identificacion, $telefono, $fkRol);
         
         if (!$stmt->execute()) {
-            header("Location: index.php?action=gestion_instructores&error=" . urlencode($db->error));
+            header("Location: " . $redirectError . urlencode($db->error));
             exit();
         }
 
-        header("Location: index.php?action=gestion_instructores&creado=1");
+        header("Location: " . $redirectOk);
         exit();
     }
 

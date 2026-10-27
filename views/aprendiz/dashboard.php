@@ -15,6 +15,7 @@ $asistenciaHoy = $asistenciaHoy ?? null;
 $historial = $historial ?? [];
 $misExcusas = $misExcusas ?? [];
 $mensajeError = $mensajeError ?? null;
+$seccionActiva = $seccionActiva ?? 'resumen';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -33,246 +34,462 @@ $mensajeError = $mensajeError ?? null;
 
     <div class="dashboard-container portal-container-bg">
         <?php 
-        $activo = 'dashboard';
+        if (isset($vistaActiva) && $vistaActiva === 'escaner') {
+            $activo = 'escaner';
+        } elseif (($seccionActiva ?? '') === 'historial') {
+            $activo = 'historial';
+        } else {
+            $activo = 'dashboard';
+        }
         $rol = 'Aprendiz';
         require_once __DIR__ . '/../partials/sidebar.php'; 
         ?>
 
         <main class="main-content p-0 portal-main-content">
-            <nav class="navbar navbar-expand-lg navbar-aprendiz py-3 px-4">
-        <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center text-white fw-bold gap-2" href="#">
-                <span class="badge rounded-circle p-2 sena-badge-icon">
-                    <i class="bi bi-person-badge text-white fs-5"></i>
-                </span>
-                <span>Portal Aprendiz <span class="badge bg-success ms-1 small">SENA</span></span>
-            </a>
-
-            <div class="d-flex align-items-center gap-3">
-                <div class="header-profile-card d-flex align-items-center gap-3" data-bs-toggle="modal" data-bs-target="#modalPerfil" title="Ver información del aprendiz">
-                    <div class="header-avatar-circle">
-                        <i class="bi bi-person-fill"></i>
-                    </div>
-                    <div class="text-start pe-2 d-none d-sm-block">
-                        <h6 class="fw-bold mb-0 text-white user-name-title"><?= htmlspecialchars($datosAprendiz['nombre'] . ' ' . $datosAprendiz['apellido']); ?></h6>
-                        <span class="text-muted user-doc-subtitle">Doc: <?= htmlspecialchars($datosAprendiz['identificacion']); ?></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container py-4">
-        <?php require_once __DIR__ . '/../partials/mensajes.php'; ?>
-
-        <?php if (!empty($mensajeError)): ?>
-            <div class="alert alert-warning alert-dismissible fade show py-2 px-3 small mb-4" role="alert">
-                <i class="bi bi-info-circle-fill me-2"></i> <?= htmlspecialchars($mensajeError); ?>
-                <button type="button" class="btn-close btn-close-white py-2" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        <?php endif; ?>
-
-        <div class="card portal-card p-4 mb-4 shadow-sm">
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-                <div>
-                    <h3 class="fw-bold mb-1 text-white">¡Hola, <?= htmlspecialchars($datosAprendiz['nombre']); ?>!</h3>
-                    <p class="text-muted mb-0">Bienvenido a tu panel de seguimiento y autogestión de asistencia.</p>
-                </div>
-                <div class="d-flex gap-2 flex-wrap">
-                    <span class="badge bg-dark border border-secondary text-white py-2 px-3 rounded-pill">
-                        <i class="bi bi-journal-bookmark me-1 text-success"></i> Ficha: <?= htmlspecialchars($datosAprendiz['numero_ficha'] ?? 'Sin asignar'); ?>
-                    </span>
-                    <span class="badge bg-dark border border-secondary text-white py-2 px-3 rounded-pill">
-                        <i class="bi bi-mortarboard me-1 text-success"></i> <?= htmlspecialchars($datosAprendiz['nombre_programa'] ?? 'ADSO'); ?>
-                    </span>
-                    <span class="badge bg-dark border border-secondary text-white py-2 px-3 rounded-pill">
-                        <i class="bi bi-clock me-1 text-success"></i> <?= htmlspecialchars($datosAprendiz['jornada'] ?? 'Diurna'); ?>
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <!-- ALERTA PREVENTIVA DE INASISTENCIAS Y COMITÉ (SOLO LECTURA) -->
-        <?php if (!empty($comiteAprendiz) && in_array($comiteAprendiz['estado'], ['Pendiente', 'Citado'])): ?>
-            <div class="alert alert-danger border-danger d-flex align-items-center gap-3 p-3 mb-4 rounded-3 shadow-sm" role="alert">
-                <i class="bi bi-exclamation-octagon-fill fs-2 text-danger flex-shrink-0"></i>
-                <div>
-                    <h6 class="alert-heading fw-bold mb-1">
-                        <i class="bi bi-gavel me-1"></i> Remisión a Comité de Evaluación y Seguimiento Activa
-                    </h6>
-                    <p class="mb-1 small">
-                        Has sido remitido a Comité de Evaluación y Seguimiento por registrar <strong><?= (int)$comiteAprendiz['total_faltas']; ?> inasistencias</strong> (<?= number_format((float)$comiteAprendiz['porcentaje_fallas'], 1); ?>% de inasistencia).
-                        Estado actual: <span class="badge bg-warning text-dark fw-bold"><?= htmlspecialchars($comiteAprendiz['estado']); ?></span>.
-                    </p>
-                    <p class="mb-0 small text-white-50">
-                        <strong>Motivo reportado:</strong> <?= htmlspecialchars($comiteAprendiz['motivo']); ?> | Remitido el: <?= date('d/m/Y H:i', strtotime($comiteAprendiz['fecha_remision'])); ?> por Instructor <?= htmlspecialchars(($comiteAprendiz['instructor_nombre'] ?? '') . ' ' . ($comiteAprendiz['instructor_apellido'] ?? '')); ?>.
-                    </p>
-                </div>
-            </div>
-        <?php elseif ($totalFaltas == 2): ?>
-            <div class="alert alert-warning border-warning d-flex align-items-center gap-3 p-3 mb-4 rounded-3 shadow-sm text-white alert-comite-warning" role="alert">
-                <i class="bi bi-exclamation-triangle-fill fs-2 text-warning flex-shrink-0"></i>
-                <div>
-                    <h6 class="alert-heading fw-bold mb-1 text-warning">
-                        <i class="bi bi-shield-exclamation me-1"></i> Alerta Preventiva de Inasistencias
-                    </h6>
-                    <p class="mb-0 fs-6">
-                        <strong>Tu número de faltas son 2, una más y cumples para comité.</strong>
-                    </p>
-                    <small class="text-white-50">
-                        Según el Reglamento del Aprendiz SENA, acumular 3 inasistencias injustificadas faculta al instructor para solicitar tu citación a Comité de Evaluación y Seguimiento. Si tus inasistencias obedecen a fuerza mayor o incapacidad médica, recuerda radicar tus soportes a tiempo.
-                    </small>
-                </div>
-            </div>
-        <?php elseif ($totalFaltas >= 3): ?>
-            <div class="alert alert-danger border-danger d-flex align-items-center gap-3 p-3 mb-4 rounded-3 shadow-sm text-white alert-comite-danger" role="alert">
-                <i class="bi bi-slash-circle-fill fs-2 text-danger flex-shrink-0"></i>
-                <div>
-                    <h6 class="alert-heading fw-bold mb-1 text-danger">
-                        <i class="bi bi-exclamation-diamond-fill me-1"></i> Límite de Inasistencias Superado
-                    </h6>
-                    <p class="mb-0 fs-6">
-                        <strong>Has alcanzado <?= $totalFaltas; ?> inasistencias injustificadas.</strong> Has superado el umbral permitido y tu estado se encuentra en causal de remisión a Comité de Evaluación y Seguimiento.
-                    </p>
-                    <small class="text-white-50">
-                        Comunícate con tu vocero o instructor de ficha a la mayor brevedad.
-                    </small>
-                </div>
-            </div>
-        <?php elseif ($totalFaltas == 1): ?>
-            <div class="alert alert-dark border-secondary d-flex align-items-center gap-3 p-2 mb-4 rounded-3 shadow-sm text-white-50" role="alert">
-                <i class="bi bi-info-circle fs-4 text-info flex-shrink-0 ms-1"></i>
-                <div class="small">
-                    Registras <strong class="text-white">1 inasistencia acumulada</strong>. Mantente al día con tus asistencias para evitar citaciones a comité.
-                </div>
-            </div>
-        <?php endif; ?>
-
-        <div class="row g-3 mb-4">
-            <div class="col-12 col-md-3">
-                <div class="card portal-card p-3 h-100 shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-muted small fw-semibold">Rendimiento General</span>
-                        <i class="bi bi-speedometer2 text-success fs-5"></i>
-                    </div>
-                    <h2 class="fw-bold text-white mb-2"><?= $porcentajeAsistencia; ?>%</h2>
-
-                    <?php 
-                        $barraClase = 'bg-success';
-                        if ($porcentajeAsistencia < 85) $barraClase = 'bg-warning';
-                        if ($porcentajeAsistencia < 75) $barraClase = 'bg-danger';
-                    ?>
-                    <div class="progress progress-dark">
-                        <div class="progress-bar <?= $barraClase; ?>" role="progressbar" data-progress="<?= $porcentajeAsistencia; ?>"></div>
-                    </div>
-                    <small class="text-muted mt-2 d-block">
-                        <?= ($porcentajeAsistencia >= 85) ? 'Buen nivel de asistencia' : '¡Atención a tus inasistencias!'; ?>
-                    </small>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-3">
-                <div class="card portal-card p-3 h-100 shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-muted small fw-semibold">Asistencias</span>
-                        <div class="p-2 rounded stat-icon-asistio">
-                            <i class="bi bi-check-circle-fill"></i>
+            <!-- Barra Superior con Saludo Personalizado y Datos de Formación -->
+            <nav class="navbar navbar-expand-lg navbar-aprendiz py-3 px-4 border-bottom border-secondary">
+                <div class="container-fluid flex-wrap gap-3">
+                    <a class="navbar-brand d-flex align-items-center text-white fw-bold gap-3 m-0" href="index.php?action=portal_aprendiz">
+                        <span class="badge rounded-circle p-2 sena-badge-icon">
+                            <i class="bi bi-person-badge text-white fs-5"></i>
+                        </span>
+                        <div>
+                            <span class="fs-5 d-block text-white">¡Hola, <?= htmlspecialchars($datosAprendiz['nombre']); ?>! <span class="text-success fw-semibold">Bienvenido</span></span>
+                            <small class="text-muted fw-normal">Portal del Aprendiz SENA</small>
                         </div>
-                    </div>
-                    <h2 class="fw-bold text-white mb-1"><?= $totalAsistencias; ?></h2>
-                    <small class="text-muted">Días cumplidos a tiempo</small>
-                </div>
-            </div>
+                    </a>
 
-            <div class="col-6 col-md-3">
-                <div class="card portal-card p-3 h-100 shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-muted small fw-semibold">Tardanzas</span>
-                        <div class="p-2 rounded stat-icon-tarde">
-                            <i class="bi bi-clock-history"></i>
+                    <?php if (!isset($vistaActiva) || $vistaActiva !== 'escaner'): ?>
+                        <!-- Insignias de Formación en la barra superior -->
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="badge bg-dark border border-secondary text-white py-2 px-3 rounded-pill">
+                                <i class="bi bi-journal-bookmark me-1 text-success"></i> Ficha: <?= htmlspecialchars($datosAprendiz['numero_ficha'] ?? 'Sin asignar'); ?>
+                            </span>
+                            <span class="badge bg-dark border border-secondary text-white py-2 px-3 rounded-pill d-none d-md-inline-block">
+                                <i class="bi bi-mortarboard me-1 text-success"></i> <?= htmlspecialchars($datosAprendiz['nombre_programa'] ?? 'ADSO'); ?>
+                            </span>
+                            <span class="badge bg-dark border border-secondary text-white py-2 px-3 rounded-pill">
+                                <i class="bi bi-clock me-1 text-success"></i> <?= htmlspecialchars($datosAprendiz['jornada'] ?? 'Diurna'); ?>
+                            </span>
+                            <?php if (($seccionActiva ?? '') === 'historial'): ?>
+                                <a href="index.php?action=portal_aprendiz" class="btn btn-sm btn-outline-light rounded-pill px-3 ms-1">
+                                    <i class="bi bi-arrow-left me-1"></i> Ver Resumen
+                                </a>
+                            <?php else: ?>
+                                <a href="index.php?action=portal_aprendiz&seccion=historial" class="btn btn-sm btn-sena-green rounded-pill px-3 ms-1">
+                                    <i class="bi bi-clock-history me-1"></i> Ver Historial
+                                </a>
+                            <?php endif; ?>
                         </div>
-                    </div>
-                    <h2 class="fw-bold text-white mb-1"><?= $totalRetardos; ?></h2>
-                    <small class="text-muted">Llegadas con retardo</small>
-                </div>
-            </div>
-
-            
-            <div class="col-12 col-md-3">
-                <div class="card portal-card p-3 h-100 shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-muted small fw-semibold">Inasistencias</span>
-                        <div class="p-2 rounded stat-icon-falta">
-                            <i class="bi bi-x-circle-fill"></i>
-                        </div>
-                    </div>
-                    <h2 class="fw-bold text-white mb-1"><?= $totalFaltas; ?></h2>
-                    <small class="text-muted">Faltas acumuladas</small>
-                </div>
-            </div>
-
-        </div>
-
-        
-        <div class="card portal-card p-4 mb-4 shadow-sm text-center">
-            <div class="row align-items-center">
-                <div class="col-md-7 text-md-start mb-3 mb-md-0">
-                    <h5 class="fw-bold text-white mb-1">
-                        <i class="bi bi-calendar2-check text-success me-2"></i>Asistencia del Día: <?= date('d/m/Y'); ?>
-                    </h5>
-                    <p class="text-muted small mb-0">
-                        <?php if (!$asistenciaHoy): ?>
-                            Aún no has registrado tu entrada de hoy. Puedes marcarla con el botón si te encuentras en formación.
-                        <?php elseif (empty($asistenciaHoy['salida']) || $asistenciaHoy['salida'] === '0000-00-00 00:00:00'): ?>
-                            Entrada registrada a las <?= date('h:i A', strtotime($asistenciaHoy['entrada'])); ?>. No olvides marcar tu salida al finalizar.
-                        <?php else: ?>
-                            ¡Jornada completada! Entrada: <?= date('h:i A', strtotime($asistenciaHoy['entrada'])); ?> | Salida: <?= date('h:i A', strtotime($asistenciaHoy['salida'])); ?>.
-                        <?php endif; ?>
-                    </p>
-                </div>
-                <div class="col-md-5 text-md-end">
-                    <?php if (!$asistenciaHoy): ?>
-                        <a href="index.php?action=marcar_asistencia_aprendiz" class="btn btn-sena-green px-4 py-2 fw-semibold shadow-sm rounded-pill">
-                            <i class="bi bi-box-arrow-in-right me-1"></i> Marcar Entrada de Hoy
-                        </a>
-                    <?php elseif (empty($asistenciaHoy['salida']) || $asistenciaHoy['salida'] === '0000-00-00 00:00:00'): ?>
-                        <a href="index.php?action=marcar_asistencia_aprendiz" class="btn btn-warning px-4 py-2 fw-semibold shadow-sm rounded-pill text-dark">
-                            <i class="bi bi-box-arrow-right me-1"></i> Marcar Salida de Hoy
-                        </a>
-                    <?php else: ?>
-                        <button class="btn btn-outline-success px-4 py-2 fw-semibold rounded-pill" disabled>
-                            <i class="bi bi-check2-all me-1"></i> Asistencia de Hoy Completada
-                        </button>
                     <?php endif; ?>
-                </div>
-            </div>
-        </div>
 
-        <div class="row g-4">
-            <div class="col-lg-8">
-                <div class="card portal-card p-3 shadow-sm h-100" id="seccion-historial">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold text-white mb-0">
-                            <i class="bi bi-clock-history text-success me-2"></i>Historial de Asistencias
-                        </h5>
-                        <span class="badge bg-dark border border-secondary text-muted"><?= count($historial); ?> Registros</span>
+                    <div class="d-flex align-items-center gap-3 ms-auto ms-lg-0">
+                        <?php if (!isset($vistaActiva) || $vistaActiva !== 'escaner'): ?>
+                            <a href="index.php?action=escaner_rfid" class="btn btn-outline-info btn-sm rounded-pill px-3 d-none d-sm-inline-flex align-items-center">
+                                <i class="bi bi-upc-scan me-1"></i> Lector RFID
+                            </a>
+                        <?php else: ?>
+                            <a href="index.php?action=portal_aprendiz" class="btn btn-outline-secondary btn-sm rounded-pill px-3 d-none d-sm-inline-flex align-items-center">
+                                <i class="bi bi-arrow-left me-1"></i> Volver al Portal
+                            </a>
+                        <?php endif; ?>
+                        <div class="header-profile-card d-flex align-items-center gap-3" data-bs-toggle="modal" data-bs-target="#modalPerfil" title="Ver información del aprendiz">
+                            <div class="header-avatar-circle">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <div class="text-start pe-2 d-none d-sm-block">
+                                <h6 class="fw-bold mb-0 text-white user-name-title"><?= htmlspecialchars($datosAprendiz['nombre'] . ' ' . $datosAprendiz['apellido']); ?></h6>
+                                <span class="text-muted user-doc-subtitle">Doc: <?= htmlspecialchars($datosAprendiz['identificacion']); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container py-4">
+                <?php require_once __DIR__ . '/../partials/mensajes.php'; ?>
+
+                <?php if (!empty($mensajeError)): ?>
+                    <div class="alert alert-warning alert-dismissible fade show py-2 px-3 small mb-4" role="alert">
+                        <i class="bi bi-info-circle-fill me-2"></i> <?= htmlspecialchars($mensajeError); ?>
+                        <button type="button" class="btn-close btn-close-white py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (isset($vistaActiva) && $vistaActiva === 'escaner'): ?>
+
+                    <!-- VISTA 1: ESCÁNER RFID PARA EL APRENDIZ -->
+                    <div class="row justify-content-center mt-3">
+                        <div class="col-md-8">
+                            <div class="card shadow-lg text-center p-5 scanner-card-box">
+                                <div class="card-body">
+                                    <div class="mb-4">
+                                        <i class="bi bi-credit-card-2-front fs-1 text-info"></i>
+                                    </div>
+                                    <h3 class="card-title text-white mb-3">Lector de Asistencia RFID</h3>
+                                    <p class="text-muted mb-4">Acerque su tarjeta o llavero RFID al sensor. El sistema registrará su entrada o salida automáticamente.</p>
+                                    <form id="formEscaner">
+                                        <div class="mb-3">
+                                            <input type="text" id="codigo_rfid" name="codigo_rfid" class="form-control form-control-lg text-center scanner-input-box" placeholder="Esperando lectura de RFID..." autofocus autocomplete="off" required>
+                                        </div>
+                                    </form>
+                                    <div id="respuestaAsistencia" class="mt-4"></div>
+                                    <div class="mt-4">
+                                        <a href="index.php?action=portal_aprendiz" class="btn btn-outline-secondary rounded-pill px-4">
+                                            <i class="bi bi-arrow-left me-1"></i> Volver al Inicio
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <script src="public/js/escaner.js"></script>
+
+                <?php elseif (($seccionActiva ?? '') === 'historial'): ?>
+
+                    <!-- VISTA 2: HISTORIAL DETALLADO Y EXCUSAS -->
+                    <div class="row g-4">
+                        <div class="col-lg-8">
+                            <div class="card portal-card p-3 shadow-sm h-100" id="seccion-historial">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="fw-bold text-white mb-0">
+                                        <i class="bi bi-clock-history text-success me-2"></i>Historial de Asistencias
+                                    </h5>
+                                    <span class="badge bg-dark border border-secondary text-muted"><?= count($historial); ?> Registros</span>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-dark table-hover align-middle mb-0">
+                                        <thead>
+                                            <tr class="text-muted small border-bottom border-secondary">
+                                                <th>FECHA</th>
+                                                <th>PROGRAMA / COMPETENCIA</th>
+                                                <th>INSTRUCTOR</th>
+                                                <th>HORARIO</th>
+                                                <th>ESTADO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php if (!empty($historial)): ?>
+                                                <?php foreach ($historial as $fila): ?>
+                                                    <?php 
+                                                        $estado = $fila['estado_entrada'] ?? 'Presente';
+                                                        $badgeClase = 'badge-asistio';
+                                                        if (stripos($estado, 'retardo') !== false || stripos($estado, 'tarde') !== false) {
+                                                            $badgeClase = 'badge-tarde';
+                                                        } else if (stripos($estado, 'falta') !== false || stripos($estado, 'ausente') !== false || stripos($estado, 'inasistencia') !== false) {
+                                                            $badgeClase = 'badge-falta';
+                                                        }
+                                                    ?>
+                                                    <tr class="border-bottom border-secondary">
+                                                        <td class="fw-semibold text-white"><?= htmlspecialchars($fila['fecha_asistencia']); ?></td>
+                                                        <td><small class="text-white"><?= htmlspecialchars($fila['nombre_programa'] ?? 'ADSO'); ?></small></td>
+                                                        <td><small class="text-muted"><?= htmlspecialchars(trim(($fila['nombre_instructor'] ?? 'Instructor') . ' ' . ($fila['apellido_instructor'] ?? ''))); ?></small></td>
+                                                        <td>
+                                                            <small class="text-muted">
+                                                                <?= !empty($fila['entrada']) ? date('h:i A', strtotime($fila['entrada'])) : '--:--'; ?>
+                                                                -
+                                                                <?= !empty($fila['salida']) ? date('h:i A', strtotime($fila['salida'])) : '--:--'; ?>
+                                                            </small>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge rounded-pill px-3 py-1 <?= $badgeClase; ?>">
+                                                                <?= htmlspecialchars($estado); ?>
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td colspan="5" class="text-center py-4 text-muted">Aún no tienes registros de asistencia en el sistema.</td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <?php
+                                $cntApPendientes = 0;
+                                $cntApAprobadas = 0;
+                                $cntApRechazadas = 0;
+                                if (!empty($misExcusas)) {
+                                    foreach ($misExcusas as $e) {
+                                        $st = $e['estado'] ?? 'Pendiente';
+                                        if ($st === 'Pendiente') $cntApPendientes++;
+                                        elseif ($st === 'Aprobada') $cntApAprobadas++;
+                                        elseif ($st === 'Rechazada') $cntApRechazadas++;
+                                    }
+                                }
+                            ?>
+                            <div class="card portal-card p-3 shadow-sm h-100" id="seccion-excusas">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="fw-bold text-white mb-0">
+                                        <i class="bi bi-folder2-open text-warning me-2"></i>Historial de Excusas
+                                    </h5>
+                                    <button class="btn btn-sm btn-sena-green rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalSubirExcusa">
+                                        <i class="bi bi-plus-lg me-1"></i> Radicar
+                                    </button>
+                                </div>
+
+                                <p class="text-muted small mb-2">Seguimiento y estado de tus justificaciones médicas:</p>
+
+                                <!-- Pestañas de Filtro Rápido -->
+                                <div class="btn-group w-100 mb-3" role="group" id="filtroExcusasAprendiz">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary text-white active py-1 btn-pill-xs" data-filtro="todas">Todas (<?= count($misExcusas); ?>)</button>
+                                    <button type="button" class="btn btn-sm btn-outline-warning py-1 btn-pill-xs" data-filtro="pendiente">Pend. (<?= $cntApPendientes; ?>)</button>
+                                    <button type="button" class="btn btn-sm btn-outline-success py-1 btn-pill-xs" data-filtro="aprobada">Aprob. (<?= $cntApAprobadas; ?>)</button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger py-1 btn-pill-xs" data-filtro="rechazada">Rech. (<?= $cntApRechazadas; ?>)</button>
+                                </div>
+
+                                <div class="d-flex flex-column gap-2 excusas-scroll-list" id="listaExcusasAprendiz">
+                                    <?php if (!empty($misExcusas)): ?>
+                                        <?php foreach ($misExcusas as $exc): ?>
+                                            <?php 
+                                                $estExcusa = $exc['estado'] ?? 'Pendiente';
+                                                $badgeExcusa = 'bg-warning text-dark';
+                                                if ($estExcusa === 'Aprobada') {
+                                                    $badgeExcusa = 'bg-success text-white';
+                                                } elseif ($estExcusa === 'Rechazada') {
+                                                    $badgeExcusa = 'bg-danger text-white';
+                                                }
+                                            ?>
+                                            <div class="p-3 excusa-card-item rounded bg-dark border" data-estado="<?= strtolower($estExcusa); ?>">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <span class="fw-semibold text-white small">
+                                                        <i class="bi bi-calendar-x text-warning me-1"></i>Falta del: <?= htmlspecialchars($exc['fecha_asistencia']); ?>
+                                                    </span>
+                                                    <span class="badge rounded-pill <?= $badgeExcusa; ?> px-2 py-1 badge-text-xs">
+                                                        <?= htmlspecialchars($estExcusa); ?>
+                                                    </span>
+                                                </div>
+                                                <p class="text-light small mb-2 fst-italic excusa-motivo-box">
+                                                    "<?= htmlspecialchars($exc['observacion']); ?>"
+                                                </p>
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <small class="text-muted user-doc-subtitle">
+                                                        <i class="bi bi-clock me-1"></i>Radicado: <?= htmlspecialchars($exc['fecha_subida']); ?>
+                                                    </small>
+                                                    <a href="public/uploads/excusas/<?= htmlspecialchars($exc['archivo']); ?>" target="_blank" class="btn btn-sm btn-outline-info rounded-pill py-0 px-2 text-xs">
+                                                        <i class="bi bi-file-earmark-arrow-down"></i> Ver adjunto
+                                                    </a>
+                                                </div>
+                                                <?php if ($estExcusa === 'Pendiente'): ?>
+                                                    <div class="text-warning border-top border-secondary pt-1 mt-1 text-xxs">
+                                                        <i class="bi bi-hourglass-split me-1"></i>En revisión por el instructor
+                                                    </div>
+                                                <?php else: ?>
+                                                    <div class="text-muted border-top border-secondary pt-1 mt-1 text-xxs">
+                                                        <i class="bi bi-shield-check <?= ($estExcusa === 'Aprobada') ? 'text-success' : 'text-danger'; ?> me-1"></i>
+                                                        <?= ($estExcusa === 'Aprobada') ? 'Aprobada' : 'Rechazada'; ?> el: <?= htmlspecialchars($exc['fecha_revision'] ?? '---'); ?>
+                                                        <?php if (!empty($exc['revisor_nombre'])): ?>
+                                                            por <?= htmlspecialchars($exc['revisor_nombre'] . ' ' . ($exc['revisor_apellido'] ?? '')); ?>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <div class="text-center py-4 text-muted">
+                                            <i class="bi bi-folder-check fs-2 d-block mb-2 text-muted"></i>
+                                            No tienes excusas radicadas actualmente.
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="table-responsive">
-                        <table class="table table-dark table-hover align-middle mb-0">
-                            <thead>
-                                <tr class="text-muted small border-bottom border-secondary">
-                                    <th>FECHA</th>
-                                    <th>PROGRAMA / COMPETENCIA</th>
-                                    <th>INSTRUCTOR</th>
-                                    <th>HORARIO</th>
-                                    <th>ESTADO</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($historial)): ?>
-                                    <?php foreach ($historial as $fila): ?>
-                                        <?php 
+                <?php else: ?>
+
+                    <!-- VISTA 3: INICIO / RESUMEN CON KPIs Y ASISTENCIA DEL DÍA -->
+                    
+                    <!-- ALERTA PREVENTIVA DE INASISTENCIAS Y COMITÉ (SOLO LECTURA) -->
+                    <?php if (!empty($comiteAprendiz) && in_array($comiteAprendiz['estado'], ['Pendiente', 'Citado'])): ?>
+                        <div class="alert alert-danger border-danger alert-comite-danger d-flex align-items-center gap-3 p-3 mb-4 rounded-3 shadow-sm text-light" role="alert" data-bs-theme="dark">
+                            <i class="bi bi-exclamation-octagon-fill fs-2 text-danger flex-shrink-0"></i>
+                            <div>
+                                <h6 class="alert-heading fw-bold mb-1 text-danger">
+                                    <i class="bi bi-gavel me-1"></i> Remisión a Comité de Evaluación y Seguimiento Activa
+                                </h6>
+                                <p class="mb-1 small text-light">
+                                    Has sido remitido a Comité de Evaluación y Seguimiento por registrar <strong><?= (int)$comiteAprendiz['total_faltas']; ?> inasistencias</strong> (<?= number_format((float)$comiteAprendiz['porcentaje_fallas'], 1); ?>% de inasistencia).
+                                    Estado actual: <span class="badge rounded-pill badge-comite-pendiente"><?= htmlspecialchars($comiteAprendiz['estado']); ?></span>.
+                                </p>
+                                <p class="mb-0 small text-white-50">
+                                    <strong>Motivo reportado:</strong> <?= htmlspecialchars($comiteAprendiz['motivo']); ?> | Remitido el: <?= date('d/m/Y H:i', strtotime($comiteAprendiz['fecha_remision'])); ?> por Instructor <?= htmlspecialchars(($comiteAprendiz['instructor_nombre'] ?? '') . ' ' . ($comiteAprendiz['instructor_apellido'] ?? '')); ?>.
+                                </p>
+                            </div>
+                        </div>
+                    <?php elseif ($totalFaltas == 2): ?>
+                        <div class="alert alert-warning border-warning d-flex align-items-center gap-3 p-3 mb-4 rounded-3 shadow-sm text-white alert-comite-warning" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill fs-2 text-warning flex-shrink-0"></i>
+                            <div>
+                                <h6 class="alert-heading fw-bold mb-1 text-warning">
+                                    <i class="bi bi-shield-exclamation me-1"></i> Alerta Preventiva de Inasistencias
+                                </h6>
+                                <p class="mb-0 fs-6">
+                                    <strong>Tu número de faltas son 2, una más y cumples para comité.</strong>
+                                </p>
+                                <small class="text-white-50">
+                                    Según el Reglamento del Aprendiz SENA, acumular 3 inasistencias injustificadas faculta al instructor para solicitar tu citación a Comité de Evaluación y Seguimiento. Si tus inasistencias obedecen a fuerza mayor o incapacidad médica, recuerda radicar tus soportes a tiempo.
+                                </small>
+                            </div>
+                        </div>
+                    <?php elseif ($totalFaltas >= 3): ?>
+                        <div class="alert alert-danger border-danger d-flex align-items-center gap-3 p-3 mb-4 rounded-3 shadow-sm text-white alert-comite-danger" role="alert">
+                            <i class="bi bi-slash-circle-fill fs-2 text-danger flex-shrink-0"></i>
+                            <div>
+                                <h6 class="alert-heading fw-bold mb-1 text-danger">
+                                    <i class="bi bi-exclamation-diamond-fill me-1"></i> Límite de Inasistencias Superado
+                                </h6>
+                                <p class="mb-0 fs-6">
+                                    <strong>Has alcanzado <?= $totalFaltas; ?> inasistencias injustificadas.</strong> Has superado el umbral permitido y tu estado se encuentra en causal de remisión a Comité de Evaluación y Seguimiento.
+                                </p>
+                                <small class="text-white-50">
+                                    Comunícate con tu vocero o instructor de ficha a la mayor brevedad.
+                                </small>
+                            </div>
+                        </div>
+                    <?php elseif ($totalFaltas == 1): ?>
+                        <div class="alert alert-dark border-secondary d-flex align-items-center gap-3 p-2 mb-4 rounded-3 shadow-sm text-white-50" role="alert">
+                            <i class="bi bi-info-circle fs-4 text-info flex-shrink-0 ms-1"></i>
+                            <div class="small">
+                                Registras <strong class="text-white">1 inasistencia acumulada</strong>. Mantente al día con tus asistencias para evitar citaciones a comité.
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- TARJETAS DE INDICADORES (KPIs) -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-3">
+                            <div class="card portal-card p-3 h-100 shadow-sm">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small fw-semibold">Rendimiento General</span>
+                                    <i class="bi bi-speedometer2 text-success fs-5"></i>
+                                </div>
+                                <h2 class="fw-bold text-white mb-2"><?= $porcentajeAsistencia; ?>%</h2>
+
+                                <?php 
+                                    $barraClase = 'bg-success';
+                                    if ($porcentajeAsistencia < 85) $barraClase = 'bg-warning';
+                                    if ($porcentajeAsistencia < 75) $barraClase = 'bg-danger';
+                                ?>
+                                <div class="progress progress-dark">
+                                    <div class="progress-bar <?= $barraClase; ?>" role="progressbar" data-progress="<?= $porcentajeAsistencia; ?>"></div>
+                                </div>
+                                <small class="text-muted mt-2 d-block">
+                                    <?= ($porcentajeAsistencia >= 85) ? 'Buen nivel de asistencia' : '¡Atención a tus inasistencias!'; ?>
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-3">
+                            <div class="card portal-card p-3 h-100 shadow-sm">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small fw-semibold">Asistencias</span>
+                                    <div class="p-2 rounded stat-icon-asistio">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    </div>
+                                </div>
+                                <h2 class="fw-bold text-white mb-1"><?= $totalAsistencias; ?></h2>
+                                <small class="text-muted">Días cumplidos a tiempo</small>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-3">
+                            <div class="card portal-card p-3 h-100 shadow-sm">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small fw-semibold">Tardanzas</span>
+                                    <div class="p-2 rounded stat-icon-tarde">
+                                        <i class="bi bi-clock-history"></i>
+                                    </div>
+                                </div>
+                                <h2 class="fw-bold text-white mb-1"><?= $totalRetardos; ?></h2>
+                                <small class="text-muted">Llegadas con retardo</small>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <div class="card portal-card p-3 h-100 shadow-sm">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small fw-semibold">Inasistencias</span>
+                                    <div class="p-2 rounded stat-icon-falta">
+                                        <i class="bi bi-x-circle-fill"></i>
+                                    </div>
+                                </div>
+                                <h2 class="fw-bold text-white mb-1"><?= $totalFaltas; ?></h2>
+                                <small class="text-muted">Faltas acumuladas</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ASISTENCIA DEL DÍA -->
+                    <div class="card portal-card p-4 mb-4 shadow-sm text-center">
+                        <div class="row align-items-center">
+                            <div class="col-md-7 text-md-start mb-3 mb-md-0">
+                                <h5 class="fw-bold text-white mb-1">
+                                    <i class="bi bi-calendar2-check text-success me-2"></i>Asistencia del Día: <?= date('d/m/Y'); ?>
+                                </h5>
+                                <p class="text-muted small mb-0">
+                                    <?php if (!$asistenciaHoy): ?>
+                                        Aún no has registrado tu entrada de hoy. Puedes marcarla con el botón si te encuentras en formación.
+                                    <?php elseif (empty($asistenciaHoy['salida']) || $asistenciaHoy['salida'] === '0000-00-00 00:00:00'): ?>
+                                        Entrada registrada a las <?= date('h:i A', strtotime($asistenciaHoy['entrada'])); ?>. No olvides marcar tu salida al finalizar.
+                                    <?php else: ?>
+                                        ¡Jornada completada! Entrada: <?= date('h:i A', strtotime($asistenciaHoy['entrada'])); ?> | Salida: <?= date('h:i A', strtotime($asistenciaHoy['salida'])); ?>.
+                                    <?php endif; ?>
+                                </p>
+                            </div>
+                            <div class="col-md-5 text-md-end">
+                                <?php if (!$asistenciaHoy): ?>
+                                    <a href="index.php?action=marcar_asistencia_aprendiz" class="btn btn-sena-green px-4 py-2 fw-semibold shadow-sm rounded-pill">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i> Marcar Entrada de Hoy
+                                    </a>
+                                <?php elseif (empty($asistenciaHoy['salida']) || $asistenciaHoy['salida'] === '0000-00-00 00:00:00'): ?>
+                                    <a href="index.php?action=marcar_asistencia_aprendiz" class="btn btn-warning px-4 py-2 fw-semibold shadow-sm rounded-pill text-dark">
+                                        <i class="bi bi-box-arrow-right me-1"></i> Marcar Salida de Hoy
+                                    </a>
+                                <?php else: ?>
+                                    <button class="btn btn-outline-success px-4 py-2 fw-semibold rounded-pill" disabled>
+                                        <i class="bi bi-check2-all me-1"></i> Asistencia de Hoy Completada
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ACTIVIDAD RECIENTE -->
+                    <div class="card portal-card p-4 mb-4 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h5 class="fw-bold text-white mb-0">
+                                    <i class="bi bi-activity text-success me-2"></i>Últimos Registros de Asistencia
+                                </h5>
+                                <small class="text-muted">Visualización rápida de tus sesiones más recientes</small>
+                            </div>
+                            <a href="index.php?action=portal_aprendiz&seccion=historial" class="btn btn-sm btn-outline-info rounded-pill px-3">
+                                Ver Todo el Historial y Excusas <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle mb-0">
+                                <thead>
+                                    <tr class="text-muted small border-bottom border-secondary">
+                                        <th>FECHA</th>
+                                        <th>PROGRAMA</th>
+                                        <th>INSTRUCTOR</th>
+                                        <th>HORARIO</th>
+                                        <th>ESTADO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php 
+                                    $recientes = array_slice($historial, 0, 4);
+                                    if (!empty($recientes)):
+                                        foreach ($recientes as $fila):
                                             $estado = $fila['estado_entrada'] ?? 'Presente';
                                             $badgeClase = 'badge-asistio';
                                             if (stripos($estado, 'retardo') !== false || stripos($estado, 'tarde') !== false) {
@@ -280,7 +497,7 @@ $mensajeError = $mensajeError ?? null;
                                             } else if (stripos($estado, 'falta') !== false || stripos($estado, 'ausente') !== false || stripos($estado, 'inasistencia') !== false) {
                                                 $badgeClase = 'badge-falta';
                                             }
-                                        ?>
+                                    ?>
                                         <tr class="border-bottom border-secondary">
                                             <td class="fw-semibold text-white"><?= htmlspecialchars($fila['fecha_asistencia']); ?></td>
                                             <td><small class="text-white"><?= htmlspecialchars($fila['nombre_programa'] ?? 'ADSO'); ?></small></td>
@@ -298,116 +515,26 @@ $mensajeError = $mensajeError ?? null;
                                                 </span>
                                             </td>
                                         </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="5" class="text-center py-4 text-muted">Aún no tienes registros de asistencia en el sistema.</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4">
-                <?php
-                    $cntApPendientes = 0;
-                    $cntApAprobadas = 0;
-                    $cntApRechazadas = 0;
-                    if (!empty($misExcusas)) {
-                        foreach ($misExcusas as $e) {
-                            $st = $e['estado'] ?? 'Pendiente';
-                            if ($st === 'Pendiente') $cntApPendientes++;
-                            elseif ($st === 'Aprobada') $cntApAprobadas++;
-                            elseif ($st === 'Rechazada') $cntApRechazadas++;
-                        }
-                    }
-                ?>
-                <div class="card portal-card p-3 shadow-sm h-100" id="seccion-excusas">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="fw-bold text-white mb-0">
-                            <i class="bi bi-folder2-open text-warning me-2"></i>Historial de Excusas
-                        </h5>
-                        <button class="btn btn-sm btn-sena-green rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalSubirExcusa">
-                            <i class="bi bi-plus-lg me-1"></i> Radicar
-                        </button>
-                    </div>
-
-                    <p class="text-muted small mb-2">Seguimiento y estado de tus justificaciones médicas:</p>
-
-                    <!-- Pestañas de Filtro Rápido -->
-                    <div class="btn-group w-100 mb-3" role="group" id="filtroExcusasAprendiz">
-                        <button type="button" class="btn btn-sm btn-outline-secondary text-white active py-1 btn-pill-xs" data-filtro="todas">Todas (<?= count($misExcusas); ?>)</button>
-                        <button type="button" class="btn btn-sm btn-outline-warning py-1 btn-pill-xs" data-filtro="pendiente">Pend. (<?= $cntApPendientes; ?>)</button>
-                        <button type="button" class="btn btn-sm btn-outline-success py-1 btn-pill-xs" data-filtro="aprobada">Aprob. (<?= $cntApAprobadas; ?>)</button>
-                        <button type="button" class="btn btn-sm btn-outline-danger py-1 btn-pill-xs" data-filtro="rechazada">Rech. (<?= $cntApRechazadas; ?>)</button>
-                    </div>
-
-                    <div class="d-flex flex-column gap-2 excusas-scroll-list" id="listaExcusasAprendiz">
-                        <?php if (!empty($misExcusas)): ?>
-                            <?php foreach ($misExcusas as $exc): ?>
-                                <?php 
-                                    $estExcusa = $exc['estado'] ?? 'Pendiente';
-                                    $badgeExcusa = 'bg-warning text-dark';
-                                    $bordeColor = '#eab308';
-                                    if ($estExcusa === 'Aprobada') {
-                                        $badgeExcusa = 'bg-success text-white';
-                                        $bordeColor = '#22c55e';
-                                    } elseif ($estExcusa === 'Rechazada') {
-                                        $badgeExcusa = 'bg-danger text-white';
-                                        $bordeColor = '#ef4444';
-                                    }
-                                ?>
-                                <div class="p-3 excusa-card-item rounded bg-dark border" data-estado="<?= strtolower($estExcusa); ?>">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span class="fw-semibold text-white small">
-                                            <i class="bi bi-calendar-x text-warning me-1"></i>Falta del: <?= htmlspecialchars($exc['fecha_asistencia']); ?>
-                                        </span>
-                                        <span class="badge rounded-pill <?= $badgeExcusa; ?> px-2 py-1 badge-text-xs">
-                                            <?= htmlspecialchars($estExcusa); ?>
-                                        </span>
-                                    </div>
-                                    <p class="text-light small mb-2 fst-italic excusa-motivo-box">
-                                        "<?= htmlspecialchars($exc['observacion']); ?>"
-                                    </p>
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <small class="text-muted user-doc-subtitle">
-                                            <i class="bi bi-clock me-1"></i>Radicado: <?= htmlspecialchars($exc['fecha_subida']); ?>
-                                        </small>
-                                        <a href="public/uploads/excusas/<?= htmlspecialchars($exc['archivo']); ?>" target="_blank" class="btn btn-sm btn-outline-info rounded-pill py-0 px-2 text-xs">
-                                            <i class="bi bi-file-earmark-arrow-down"></i> Ver adjunto
-                                        </a>
-                                    </div>
-                                    <?php if ($estExcusa === 'Pendiente'): ?>
-                                        <div class="text-warning border-top border-secondary pt-1 mt-1 text-xxs">
-                                            <i class="bi bi-hourglass-split me-1"></i>En revisión por el instructor
-                                        </div>
-                                    <?php else: ?>
-                                        <div class="text-muted border-top border-secondary pt-1 mt-1 text-xxs">
-                                            <i class="bi bi-shield-check <?= ($estExcusa === 'Aprobada') ? 'text-success' : 'text-danger'; ?> me-1"></i>
-                                            <?= ($estExcusa === 'Aprobada') ? 'Aprobada' : 'Rechazada'; ?> el: <?= htmlspecialchars($exc['fecha_revision'] ?? '---'); ?>
-                                            <?php if (!empty($exc['revisor_nombre'])): ?>
-                                                por <?= htmlspecialchars($exc['revisor_nombre'] . ' ' . ($exc['revisor_apellido'] ?? '')); ?>
-                                            <?php endif; ?>
-                                        </div>
+                                    <?php 
+                                        endforeach;
+                                    else:
+                                    ?>
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4 text-muted">Aún no tienes registros de asistencia en el sistema.</td>
+                                        </tr>
                                     <?php endif; ?>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="text-center py-4 text-muted">
-                                <i class="bi bi-folder-check fs-2 d-block mb-2 text-muted"></i>
-                                No tienes excusas radicadas actualmente.
-                            </div>
-                        <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-    </div>
+                <?php endif; ?>
+
+            </div>
         </main>
     </div>
 
+    <!-- MODAL RADICAR EXCUSA MÉDICA -->
     <div class="modal fade" id="modalSubirExcusa" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-content-dark shadow-lg border-0">
@@ -443,6 +570,7 @@ $mensajeError = $mensajeError ?? null;
         </div>
     </div>
 
+    <!-- MODAL PERFIL DEL APRENDIZ -->
     <div class="modal fade" id="modalPerfil" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg modal-content-dark">
@@ -482,9 +610,7 @@ $mensajeError = $mensajeError ?? null;
                     <button type="button" class="btn btn-outline-warning w-50 fw-semibold rounded-3 py-2" data-bs-toggle="modal" data-bs-target="#modalEditarAprendiz">
                         <i class="bi bi-pencil-square me-1"></i> Editar Perfil
                     </button>
-                    <a class="btn btn-outline-danger w-50 fw-semibold rounded-3 py-2 d-flex align-items-center justify-content-center modal-avatar-red"
-                        
-                        href="index.php?action=logout">
+                    <a class="btn btn-outline-danger w-50 fw-semibold rounded-3 py-2 d-flex align-items-center justify-content-center modal-avatar-red" href="index.php?action=logout">
                         <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
                     </a>
                 </div>
@@ -493,6 +619,7 @@ $mensajeError = $mensajeError ?? null;
         </div>
     </div>
 
+    <!-- MODAL EDITAR DATOS DEL APRENDIZ -->
     <div class="modal fade" id="modalEditarAprendiz" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg modal-content-dark">

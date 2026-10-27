@@ -179,6 +179,16 @@ body.portal-aprendiz-body {
 
 .alert-comite-danger {
     background-color: rgba(239, 68, 68, 0.15) !important;
+    border: 1px solid rgba(239, 68, 68, 0.45) !important;
+    color: #f87171 !important;
+}
+
+.badge-comite-warning,
+.badge-comite-pendiente {
+    background-color: rgba(245, 158, 11, 0.18) !important;
+    color: #f59e0b !important;
+    border: 1px solid rgba(245, 158, 11, 0.4) !important;
+    font-weight: 600;
 }
 
 .excusas-scroll-list {

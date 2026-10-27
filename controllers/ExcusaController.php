@@ -59,4 +59,51 @@ class ExcusaController
         header("Location: index.php?action=gestion_excusas&actualizado=1");
         exit();
     }
+
+    // Procesar subida de excusa médica o justificación
+    public function guardarExcusa(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $documentoAprendiz = trim($_POST['documento_aprendiz'] ?? '');
+            $fechaFalta = trim($_POST['fecha_falta'] ?? '');
+            $motivo = trim($_POST['motivo'] ?? '');
+
+            if (!empty($documentoAprendiz) && !empty($fechaFalta) && !empty($motivo)) {
+                if (isset($_FILES['archivo_excusa']) && $_FILES['archivo_excusa']['error'] === UPLOAD_ERR_OK) {
+                    $fileTmpPath = $_FILES['archivo_excusa']['tmp_name'];
+                    $fileName = $_FILES['archivo_excusa']['name'];
+                    $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+                    $allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
+
+                    if (in_array($fileExtension, $allowedExtensions)) {
+                        $uploadFileDir = __DIR__ . '/../public/uploads/excusas/';
+
+                        if (!is_dir($uploadFileDir)) {
+                            mkdir($uploadFileDir, 0755, true);
+                        }
+
+                        $nombreArchivoFinal = 'excusa_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $fileExtension;
+                        $destPath = $uploadFileDir . $nombreArchivoFinal;
+
+                        if (move_uploaded_file($fileTmpPath, $destPath)) {
+                            require_once __DIR__ . '/../models/Excusa.php';
+                            $db = $this->conectar();
+                            $excusaModel = new Excusa($db);
+                            $excusaModel->guardar($documentoAprendiz, $fechaFalta, $motivo, $nombreArchivoFinal);
+                        }
+                    }
+                }
+            }
+        }
+
+        $origen = trim($_POST['origen'] ?? '');
+        $redirect = ($origen === 'portal_aprendiz') ? "index.php?action=portal_aprendiz&excusa_subida=1" : "index.php?action=dashboard";
+        header("Location: {$redirect}");
+        exit();
+    }
 }

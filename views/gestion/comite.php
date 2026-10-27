@@ -21,7 +21,7 @@ function renderBadgeComite(string $estado): string
 {
     switch ($estado) {
         case 'Pendiente':
-            return '<span class="badge rounded-pill bg-warning-subtle text-warning px-3 py-2"><i class="bi bi-clock me-1"></i>Pendiente Citación</span>';
+            return '<span class="badge rounded-pill badge-comite-warning px-3 py-2"><i class="bi bi-clock me-1"></i>Pendiente Citación</span>';
         case 'Citado':
             return '<span class="badge rounded-pill bg-info-subtle text-info px-3 py-2"><i class="bi bi-calendar-event me-1"></i>Citado a Comité</span>';
         case 'Finalizado':
@@ -221,6 +221,8 @@ function renderBadgeComite(string $estado): string
                                         <td class="text-center">
                                             <button type="button" 
                                                     class="btn btn-sm btn-outline-warning rounded-pill px-3 btn-gestionar-caso"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalGestionarComite"
                                                     data-id="<?= $caso['id_comite']; ?>"
                                                     data-aprendiz="<?= htmlspecialchars(($caso['aprendiz_nombre'] ?? '') . ' ' . ($caso['aprendiz_apellido'] ?? '')); ?>"
                                                     data-doc="<?= htmlspecialchars($caso['aprendiz_doc'] ?? ''); ?>"
@@ -282,11 +284,15 @@ function renderBadgeComite(string $estado): string
                                 <i class="bi bi-arrow-repeat me-1 text-success"></i> Nuevo Estado del Caso:
                             </label>
                             <select name="nuevo_estado" id="gestionarEstado" class="form-select form-select-dark" required>
-                                <option value="Pendiente">Pendiente (Esperando agendamiento)</option>
                                 <option value="Citado">Citado a Comité (Notificación enviada)</option>
                                 <option value="Finalizado">Finalizado / Resuelto (Acta de Comité suscrita)</option>
                                 <option value="Archivado">Archivado / Desestimado</option>
+                                <option value="Pendiente">Pendiente (Esperando agendamiento)</option>
                             </select>
+                            <div class="form-text text-white-50 small mt-1">
+                                <i class="bi bi-info-circle text-info me-1"></i>
+                                Al actualizar a <strong>Citado</strong> o <strong>Finalizado</strong>, el caso se considerará gestionado y la alerta del panel de administración se retirará automáticamente.
+                            </div>
                         </div>
 
                         <div class="mb-3">
