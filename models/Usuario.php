@@ -23,9 +23,9 @@ class Usuario
      */
     public function obtenerPorUsuario(string $nombre_usuario): ?array
     {
-        $query = "SELECT u.*, r.nombre_rol 
+        $query = "SELECT u.*, COALESCE(r.nombre_rol, 'Administrador') AS nombre_rol 
                   FROM usuario u 
-                  INNER JOIN rol r ON u.fk_rol = r.id_rol 
+                  LEFT JOIN rol r ON u.fk_rol = r.id_rol 
                   WHERE u.nombre_usuario = ? OR u.identificacion = ? LIMIT 1";
         
         $stmt = $this->conn->prepare($query);

@@ -41,50 +41,55 @@ $seccionActiva = $seccionActiva ?? 'resumen';
         } else {
             $activo = 'dashboard';
         }
-        $rol = 'Aprendiz';
+        $rol = $_SESSION['rol'] ?? 'Aprendiz';
         require_once __DIR__ . '/../partials/sidebar.php'; 
         ?>
 
         <main class="main-content p-0 portal-main-content">
             <!-- Barra Superior con Saludo Personalizado y Datos de Formación -->
             <nav class="navbar navbar-expand-lg navbar-aprendiz py-3 px-4 border-bottom border-secondary">
-                <div class="container-fluid flex-wrap gap-3">
-                    <a class="navbar-brand d-flex align-items-center text-white fw-bold gap-3 m-0" href="index.php?action=portal_aprendiz">
+                <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <!-- Lado Izquierdo: Identidad y Datos de Formación -->
+                    <div class="d-flex align-items-center gap-3">
                         <span class="badge rounded-circle p-2 sena-badge-icon">
                             <i class="bi bi-person-badge text-white fs-5"></i>
                         </span>
                         <div>
-                            <span class="fs-5 d-block text-white">¡Hola, <?= htmlspecialchars($datosAprendiz['nombre']); ?>! <span class="text-success fw-semibold">Bienvenido</span></span>
-                            <small class="text-muted fw-normal">Portal del Aprendiz SENA</small>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fs-5 fw-bold text-white">¡Hola, <?= htmlspecialchars($datosAprendiz['nombre']); ?>!</span>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2">Bienvenido</span>
+                            </div>
+                            <?php if (!isset($vistaActiva) || $vistaActiva !== 'escaner'): ?>
+                                <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
+                                    <span class="badge bg-dark border border-secondary text-white py-1 px-2 rounded-pill">
+                                        <i class="bi bi-journal-bookmark me-1 text-success"></i> Ficha: <?= htmlspecialchars($datosAprendiz['numero_ficha'] ?? 'Sin asignar'); ?>
+                                    </span>
+                                    <span class="badge bg-dark border border-secondary text-white py-1 px-2 rounded-pill d-none d-md-inline-block">
+                                        <i class="bi bi-mortarboard me-1 text-success"></i> <?= htmlspecialchars($datosAprendiz['nombre_programa'] ?? 'ADSO'); ?>
+                                    </span>
+                                    <span class="badge bg-dark border border-secondary text-white py-1 px-2 rounded-pill">
+                                        <i class="bi bi-clock me-1 text-success"></i> <?= htmlspecialchars($datosAprendiz['jornada'] ?? 'Diurna'); ?>
+                                    </span>
+                                </div>
+                            <?php else: ?>
+                                <small class="text-muted fw-normal">Portal del Aprendiz SENA</small>
+                            <?php endif; ?>
                         </div>
-                    </a>
+                    </div>
 
-                    <?php if (!isset($vistaActiva) || $vistaActiva !== 'escaner'): ?>
-                        <!-- Insignias de Formación en la barra superior -->
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <span class="badge bg-dark border border-secondary text-white py-2 px-3 rounded-pill">
-                                <i class="bi bi-journal-bookmark me-1 text-success"></i> Ficha: <?= htmlspecialchars($datosAprendiz['numero_ficha'] ?? 'Sin asignar'); ?>
-                            </span>
-                            <span class="badge bg-dark border border-secondary text-white py-2 px-3 rounded-pill d-none d-md-inline-block">
-                                <i class="bi bi-mortarboard me-1 text-success"></i> <?= htmlspecialchars($datosAprendiz['nombre_programa'] ?? 'ADSO'); ?>
-                            </span>
-                            <span class="badge bg-dark border border-secondary text-white py-2 px-3 rounded-pill">
-                                <i class="bi bi-clock me-1 text-success"></i> <?= htmlspecialchars($datosAprendiz['jornada'] ?? 'Diurna'); ?>
-                            </span>
+                    <!-- Lado Derecho: Acciones y Perfil en una sola línea -->
+                    <div class="d-flex align-items-center gap-2">
+                        <?php if (!isset($vistaActiva) || $vistaActiva !== 'escaner'): ?>
                             <?php if (($seccionActiva ?? '') === 'historial'): ?>
-                                <a href="index.php?action=portal_aprendiz" class="btn btn-sm btn-outline-light rounded-pill px-3 ms-1">
+                                <a href="index.php?action=portal_aprendiz" class="btn btn-sm btn-outline-light rounded-pill px-3">
                                     <i class="bi bi-arrow-left me-1"></i> Ver Resumen
                                 </a>
                             <?php else: ?>
-                                <a href="index.php?action=portal_aprendiz&seccion=historial" class="btn btn-sm btn-sena-green rounded-pill px-3 ms-1">
+                                <a href="index.php?action=portal_aprendiz&seccion=historial" class="btn btn-sm btn-sena-green rounded-pill px-3 shadow-sm">
                                     <i class="bi bi-clock-history me-1"></i> Ver Historial
                                 </a>
                             <?php endif; ?>
-                        </div>
-                    <?php endif; ?>
 
-                    <div class="d-flex align-items-center gap-3 ms-auto ms-lg-0">
-                        <?php if (!isset($vistaActiva) || $vistaActiva !== 'escaner'): ?>
                             <a href="index.php?action=escaner_rfid" class="btn btn-outline-info btn-sm rounded-pill px-3 d-none d-sm-inline-flex align-items-center">
                                 <i class="bi bi-upc-scan me-1"></i> Lector RFID
                             </a>
@@ -93,7 +98,8 @@ $seccionActiva = $seccionActiva ?? 'resumen';
                                 <i class="bi bi-arrow-left me-1"></i> Volver al Portal
                             </a>
                         <?php endif; ?>
-                        <div class="header-profile-card d-flex align-items-center gap-3" data-bs-toggle="modal" data-bs-target="#modalPerfil" title="Ver información del aprendiz">
+
+                        <div class="header-profile-card d-flex align-items-center gap-3 ms-2" data-bs-toggle="modal" data-bs-target="#modalPerfil" title="Ver información del aprendiz">
                             <div class="header-avatar-circle">
                                 <i class="bi bi-person-fill"></i>
                             </div>
@@ -106,7 +112,7 @@ $seccionActiva = $seccionActiva ?? 'resumen';
                 </div>
             </nav>
 
-            <div class="container py-4">
+            <div class="container-fluid px-4 py-4">
                 <?php require_once __DIR__ . '/../partials/mensajes.php'; ?>
 
                 <?php if (!empty($mensajeError)): ?>
@@ -364,7 +370,7 @@ $seccionActiva = $seccionActiva ?? 'resumen';
 
                     <!-- TARJETAS DE INDICADORES (KPIs) -->
                     <div class="row g-3 mb-4">
-                        <div class="col-12 col-md-3">
+                        <div class="col-12 col-sm-6 col-xl-3">
                             <div class="card portal-card p-3 h-100 shadow-sm">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="text-muted small fw-semibold">Rendimiento General</span>
@@ -378,7 +384,7 @@ $seccionActiva = $seccionActiva ?? 'resumen';
                                     if ($porcentajeAsistencia < 75) $barraClase = 'bg-danger';
                                 ?>
                                 <div class="progress progress-dark">
-                                    <div class="progress-bar <?= $barraClase; ?>" role="progressbar" data-progress="<?= $porcentajeAsistencia; ?>"></div>
+                                    <div class="progress-bar <?= $barraClase; ?>" role="progressbar" style="width: <?= $porcentajeAsistencia; ?>%" data-progress="<?= $porcentajeAsistencia; ?>"></div>
                                 </div>
                                 <small class="text-muted mt-2 d-block">
                                     <?= ($porcentajeAsistencia >= 85) ? 'Buen nivel de asistencia' : '¡Atención a tus inasistencias!'; ?>
@@ -386,7 +392,7 @@ $seccionActiva = $seccionActiva ?? 'resumen';
                             </div>
                         </div>
 
-                        <div class="col-6 col-md-3">
+                        <div class="col-12 col-sm-6 col-xl-3">
                             <div class="card portal-card p-3 h-100 shadow-sm">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="text-muted small fw-semibold">Asistencias</span>
@@ -399,7 +405,7 @@ $seccionActiva = $seccionActiva ?? 'resumen';
                             </div>
                         </div>
 
-                        <div class="col-6 col-md-3">
+                        <div class="col-12 col-sm-6 col-xl-3">
                             <div class="card portal-card p-3 h-100 shadow-sm">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="text-muted small fw-semibold">Tardanzas</span>
@@ -412,7 +418,7 @@ $seccionActiva = $seccionActiva ?? 'resumen';
                             </div>
                         </div>
 
-                        <div class="col-12 col-md-3">
+                        <div class="col-12 col-sm-6 col-xl-3">
                             <div class="card portal-card p-3 h-100 shadow-sm">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="text-muted small fw-semibold">Inasistencias</span>

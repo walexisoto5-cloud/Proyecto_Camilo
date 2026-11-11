@@ -1,0 +1,14 @@
+{
+    "name": "camilo/asistencia-sena",
+    "description": "Sistema de Asistencia SENA con PHPUnit",
+    "type": "project",
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
+    },
+    "autoload": {
+        "classmap": [
+            "controllers/",
+            "models/"
+        ]
+    }
+}

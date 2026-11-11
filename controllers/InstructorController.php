@@ -169,11 +169,8 @@ class InstructorController
                 $existe = $stmtCheck->get_result()->fetch_assoc();
 
                 if ($existe) {
-                    $idAsist = $existe['id_asistencia'];
-                    $sqlUp = "UPDATE asistencia SET estado_entrada = ?, estado_salida = ? WHERE id_asistencia = ?";
-                    $stmtUp = $db->prepare($sqlUp);
-                    $stmtUp->bind_param("ssi", $estadoEntrada, $obs, $idAsist);
-                    $stmtUp->execute();
+                    // Ya cuenta con asistencia registrada en esta fecha: no se permite marcar más de una vez por día
+                    continue;
                 } else {
                     $sqlIns = "INSERT INTO asistencia (fecha_asistencia, entrada, estado_entrada, estado_salida, fk_aprendiz) 
                                VALUES (?, ?, ?, ?, ?)";
@@ -233,9 +230,7 @@ class InstructorController
         exit();
     }
 
-    // =========================================================================
-    // GESTIÓN CRUD DE INSTRUCTORES (ADMINISTRADOR) - SRP
-    // =========================================================================
+    // Gestión CRUD de Instructores (Administrador)
     public function viewInstructores(): void
     {
         requiereRol('Administrador');

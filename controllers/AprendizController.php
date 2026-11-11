@@ -143,9 +143,7 @@ class AprendizController
         exit();
     }
 
-    // =========================================================================
-    // GESTIÓN CRUD DE APRENDICES (ADMINISTRADOR) - SRP
-    // =========================================================================
+    // Gestión CRUD de Aprendices (Administrador)
     public function viewAprendices(): void
     {
         requiereRol('Administrador');

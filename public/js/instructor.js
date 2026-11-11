@@ -296,10 +296,10 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 /**
- * Marca como "Presente" a todos los aprendices del listado con un solo clic.
+ * Marca como "Presente" a todos los aprendices pendientes con un solo clic.
  */
 function marcarTodosPresente() {
-    const radiosPresente = document.querySelectorAll('.radio-presente');
+    const radiosPresente = document.querySelectorAll('.radio-presente:not(:disabled)');
     radiosPresente.forEach(radio => {
         radio.checked = true;
     });

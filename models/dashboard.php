@@ -25,9 +25,7 @@ class Dashboard
         $this->horarioModel = new Horario($db);
     }
 
-    // =========================================================================
-    // 1. MÉTRICAS DEL PANEL DE CONTROL (ADMINISTRADOR)
-    // =========================================================================
+    // 1. Métricas del Panel de Control (Administrador)
 
     public function obtenerTotalAprendices(): int
     {
@@ -104,9 +102,7 @@ class Dashboard
         return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
 
-    // =========================================================================
-    // 2. DELEGACIÓN A MODELOS ESPECIALIZADOS
-    // =========================================================================
+    // 2. Delegación a Modelos Especializados
 
     // Delegación a Ficha
     public function crearFicha(string $numeroFicha, string $programa, string $jornada = 'Diurna'): bool

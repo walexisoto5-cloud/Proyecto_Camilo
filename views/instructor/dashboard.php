@@ -363,6 +363,14 @@ foreach ($fichas as $f) {
             <div class="col-lg-9">
                 <div class="card instructor-card p-3 shadow-sm">
                     
+                    <?php
+                        $totalPendientes = 0;
+                        foreach ($aprendicesLista as $itemAp) {
+                            if (empty($itemAp['asistencia_id'])) {
+                                $totalPendientes++;
+                            }
+                        }
+                    ?>
                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3 pb-3 border-bottom border-secondary">
                         <div>
                             <h5 class="fw-bold text-white mb-0">
@@ -372,9 +380,15 @@ foreach ($fichas as $f) {
                         </div>
 
                         <div class="d-flex gap-2 flex-wrap">
-                            <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" id="btnMarcarTodosPresente">
-                                <i class="bi bi-check-all me-1"></i> Marcar todos a Presente
-                            </button>
+                            <?php if ($totalPendientes > 0): ?>
+                                <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" id="btnMarcarTodosPresente">
+                                    <i class="bi bi-check-all me-1"></i> Marcar <?= $totalPendientes; ?> pendientes a Presente
+                                </button>
+                            <?php else: ?>
+                                <span class="badge bg-success bg-opacity-25 text-success border border-success rounded-pill px-3 py-2">
+                                    <i class="bi bi-shield-check me-1"></i> Lista Completa del Día
+                                </span>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -413,22 +427,44 @@ foreach ($fichas as $f) {
                                                 </td>
 
                                                 <td class="text-center">
-                                                    <div class="btn-group" role="group" aria-label="Marcado">
-                                                        <input type="radio" class="btn-check radio-asistencia radio-presente" name="asistencia[<?= $id; ?>]" id="pres_<?= $id; ?>" value="Presente" <?= ($estado === 'Presente') ? 'checked' : ''; ?>>
-                                                        <label class="btn btn-sm btn-outline-success px-3" for="pres_<?= $id; ?>">
-                                                            <i class="bi bi-check-lg"></i> Presente
-                                                        </label>
+                                                    <?php $yaRegistrado = !empty($ap['asistencia_id']); ?>
+                                                    <?php if ($yaRegistrado): ?>
+                                                        <div class="d-inline-flex flex-column align-items-center">
+                                                            <?php if ($estado === 'Presente'): ?>
+                                                                <span class="badge bg-success bg-opacity-25 text-success border border-success px-3 py-2 rounded-pill">
+                                                                    <i class="bi bi-check-circle-fill me-1"></i> Registrado: Presente
+                                                                </span>
+                                                            <?php elseif ($estado === 'Tarde'): ?>
+                                                                <span class="badge bg-warning bg-opacity-25 text-warning border border-warning px-3 py-2 rounded-pill">
+                                                                    <i class="bi bi-clock-fill me-1"></i> Registrado: Retardo
+                                                                </span>
+                                                            <?php else: ?>
+                                                                <span class="badge bg-danger bg-opacity-25 text-danger border border-danger px-3 py-2 rounded-pill">
+                                                                    <i class="bi bi-x-circle-fill me-1"></i> Registrado: Inasistencia
+                                                                </span>
+                                                            <?php endif; ?>
+                                                            <small class="text-white-50 mt-1" style="font-size: 0.72rem;">
+                                                                <i class="bi bi-lock-fill text-secondary me-1"></i>Marcaje diario cerrado
+                                                            </small>
+                                                        </div>
+                                                    <?php else: ?>
+                                                        <div class="btn-group" role="group" aria-label="Marcado">
+                                                            <input type="radio" class="btn-check radio-asistencia radio-presente" name="asistencia[<?= $id; ?>]" id="pres_<?= $id; ?>" value="Presente" <?= ($estado === 'Presente') ? 'checked' : ''; ?>>
+                                                            <label class="btn btn-sm btn-outline-success px-3" for="pres_<?= $id; ?>">
+                                                                <i class="bi bi-check-lg"></i> Presente
+                                                            </label>
 
-                                                        <input type="radio" class="btn-check radio-asistencia" name="asistencia[<?= $id; ?>]" id="tard_<?= $id; ?>" value="Tarde" <?= ($estado === 'Tarde') ? 'checked' : ''; ?>>
-                                                        <label class="btn btn-sm btn-outline-warning px-3" for="tard_<?= $id; ?>">
-                                                            <i class="bi bi-clock"></i> Tarde
-                                                        </label>
+                                                            <input type="radio" class="btn-check radio-asistencia" name="asistencia[<?= $id; ?>]" id="tard_<?= $id; ?>" value="Tarde" <?= ($estado === 'Tarde') ? 'checked' : ''; ?>>
+                                                            <label class="btn btn-sm btn-outline-warning px-3" for="tard_<?= $id; ?>">
+                                                                <i class="bi bi-clock"></i> Tarde
+                                                            </label>
 
-                                                        <input type="radio" class="btn-check radio-asistencia" name="asistencia[<?= $id; ?>]" id="ause_<?= $id; ?>" value="Ausente" <?= ($estado === 'Ausente') ? 'checked' : ''; ?>>
-                                                        <label class="btn btn-sm btn-outline-danger px-3" for="ause_<?= $id; ?>">
-                                                            <i class="bi bi-x-lg"></i> Ausente
-                                                        </label>
-                                                    </div>
+                                                            <input type="radio" class="btn-check radio-asistencia" name="asistencia[<?= $id; ?>]" id="ause_<?= $id; ?>" value="Ausente" <?= ($estado === 'Ausente') ? 'checked' : ''; ?>>
+                                                            <label class="btn btn-sm btn-outline-danger px-3" for="ause_<?= $id; ?>">
+                                                                <i class="bi bi-x-lg"></i> Ausente
+                                                            </label>
+                                                        </div>
+                                                    <?php endif; ?>
                                                 </td>
 
                                                 <!-- Alerta Visual en Rojo del Reglamento SENA (>= 15% inasistencias) y Control de Comité -->
@@ -468,7 +504,11 @@ foreach ($fichas as $f) {
                                                 </td>
 
                                                 <td>
-                                                    <input type="text" name="observacion[<?= $id; ?>]" class="form-control form-control-sm form-control-dark text-white input-novedad" placeholder="Novedad opcional...">
+                                                    <?php if ($yaRegistrado): ?>
+                                                        <input type="text" class="form-control form-control-sm form-control-dark text-white-50 input-novedad" value="<?= htmlspecialchars($ap['estado_salida'] ?? ''); ?>" placeholder="Sin novedades registradas" readonly disabled>
+                                                    <?php else: ?>
+                                                        <input type="text" name="observacion[<?= $id; ?>]" class="form-control form-control-sm form-control-dark text-white input-novedad" placeholder="Novedad opcional...">
+                                                    <?php endif; ?>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -485,9 +525,15 @@ foreach ($fichas as $f) {
 
                         <?php if (!empty($aprendicesLista)): ?>
                             <div class="mt-4 pt-3 border-top border-secondary text-end">
-                                <button type="submit" class="btn btn-sena-action px-4 py-2 fw-semibold rounded-pill shadow-sm">
-                                    <i class="bi bi-save me-1"></i> Guardar Asistencia de la Sesión
-                                </button>
+                                <?php if ($totalPendientes > 0): ?>
+                                    <button type="submit" class="btn btn-sena-action px-4 py-2 fw-semibold rounded-pill shadow-sm">
+                                        <i class="bi bi-save me-1"></i> Guardar Asistencia de Pendientes (<?= $totalPendientes; ?>)
+                                    </button>
+                                <?php else: ?>
+                                    <button type="button" class="btn btn-secondary px-4 py-2 fw-semibold rounded-pill shadow-sm" disabled>
+                                        <i class="bi bi-check2-all me-1"></i> Asistencia del Día Finalizada
+                                    </button>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
                     </form>

@@ -31,8 +31,17 @@ class AuthController {
 
             $usuario = $usuarioModel->obtenerPorUsuario($nombre_usuario);
 
-            // Validacion estrictamente segura con password_verify
-            if ($usuario && password_verify($contrasena, $usuario['contrasena'])) {
+            // Validación con hash Bcrypt o texto plano (por si se insertó manualmente en DBeaver/SQL)
+            $esValido = false;
+            if ($usuario) {
+                if (password_verify($contrasena, $usuario['contrasena'])) {
+                    $esValido = true;
+                } elseif ($contrasena === $usuario['contrasena'] || md5($contrasena) === $usuario['contrasena']) {
+                    $esValido = true;
+                }
+            }
+
+            if ($esValido) {
                 $_SESSION['usuario_id'] = $usuario['id_usuario'];
                 $_SESSION['nombre_completo'] = $usuario['nombre'] . ' ' . $usuario['apellido'];
                 $_SESSION['nombre_usuario'] = $usuario['nombre_usuario'];

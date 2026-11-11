@@ -102,18 +102,15 @@ if ($rolUsuario === 'Instructor') {
 
     <div class="dashboard-container dashboard-container-dark min-vh-100">
 
-        <!-- Sidebar unificado de navegación modular -->
         <?php 
         $activo = 'calendario';
         $rol = $rolUsuario;
         require_once __DIR__ . '/../partials/sidebar.php'; 
         ?>
 
-        <!-- Contenido Principal -->
         <main class="main-content calendar-main-content">
             <?php require_once __DIR__ . '/../partials/mensajes.php'; ?>
 
-            <!-- Barra Superior Institucional -->
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 pb-3 mb-4 border-bottom border-secondary">
                 <div class="d-flex align-items-center gap-3">
                     <div class="p-2 rounded-circle bg-dark border border-secondary text-success">
@@ -135,7 +132,6 @@ if ($rolUsuario === 'Instructor') {
                         <button type="button" class="btn btn-primary rounded-pill px-3 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoEvento">
                             <i class="bi bi-plus-lg me-1"></i> Nuevo Evento
                         </button>
-                    <?php else: ?>
                     <?php endif; ?>
 
                     <div class="header-profile-card d-flex align-items-center gap-3 cursor-pointer" data-bs-toggle="modal" data-bs-target="#modalPerfil" title="Ver perfil">
@@ -150,7 +146,6 @@ if ($rolUsuario === 'Instructor') {
                 </div>
             </div>
 
-            <!-- Selector de Ficha Activa -->
             <div class="card bg-dark border-secondary p-3 mb-4 rounded-4 shadow-sm">
                 <div class="row align-items-center g-3">
                     <div class="col-md-7">
@@ -176,10 +171,8 @@ if ($rolUsuario === 'Instructor') {
                 </div>
             </div>
 
-            <!-- Controles del Calendario (Navegación de Mes y Filtros) -->
             <div class="row g-4">
 
-                <!-- Columna Izquierda: Panel de Filtros y Calendarios -->
                 <div class="col-xl-3 col-lg-4">
                     <div class="calendar-sidebar p-3 shadow-sm mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -251,11 +244,9 @@ if ($rolUsuario === 'Instructor') {
                     </div>
                 </div>
 
-                <!-- Columna Derecha: Vista del Calendario Principal -->
                 <div class="col-xl-9 col-lg-8">
                     <div class="calendar-main-card p-3 shadow-sm">
 
-                        <!-- Barra de controles y pestañas de vista -->
                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3 pb-3 border-bottom border-secondary">
                             <div class="d-flex align-items-center gap-2">
                                 <button type="button" class="btn btn-sm btn-outline-secondary text-white rounded-pill px-3 btn-border-slate" id="btnMesAnterior" title="Mes anterior">
@@ -279,9 +270,7 @@ if ($rolUsuario === 'Instructor') {
                             </div>
                         </div>
 
-                        <!-- VISTA 1: CALENDARIO MENSUAL SENA -->
                         <div id="vistaMesContainer">
-                            <!-- Encabezado de Días de la Semana -->
                             <div class="calendar-grid-header">
                                 <div>Lun</div>
                                 <div>Mar</div>
@@ -292,7 +281,6 @@ if ($rolUsuario === 'Instructor') {
                                 <div>Dom</div>
                             </div>
 
-                            <!-- Grid Calendario SENA -->
                             <div class="calendar-grid-body" id="gridCalendarioBody">
                                 <?php
                                 $diasNombreMap = [
@@ -442,12 +430,10 @@ if ($rolUsuario === 'Instructor') {
                                                 </div>
                                             <?php endif; ?>
 
-                                            <!-- Receso Obligatorio: 08:45 AM - 09:15 AM -->
                                             <div class="receso-card">
                                                 ☕ 08:45 - 09:15<br><span class="descanso-label">Descanso</span>
                                             </div>
 
-                                            <!-- Bloque 2: 09:15 AM - 12:00 PM -->
                                             <?php if ($segundoBloque): ?>
                                                 <div class="block-card bloque-2">
                                                     <span class="time-badge time-badge-blue">

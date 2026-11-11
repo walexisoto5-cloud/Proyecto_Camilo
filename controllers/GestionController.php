@@ -6,19 +6,11 @@ require_once __DIR__ . '/ExcusaController.php';
 require_once __DIR__ . '/ComiteController.php';
 
 /**
- * GestionController - Fachada y delegador central para compatibilidad hacia atrás (SRP)
- * Distribuye las responsabilidades hacia:
- *  - AprendizController (CRUD de aprendices y modales)
- *  - InstructorController (CRUD de instructores y asignaciones)
- *  - FichaController (CRUD de fichas y programas)
- *  - ExcusaController (Revisión y aprobación de excusas médicas)
- *  - ComiteController (Comité de evaluación y seguimiento)
+ * GestionController - Fachada y delegador central para los módulos de gestión (SRP)
  */
 class GestionController
 {
-    // =========================================================================
-    // 1. DELEGACIÓN DE APRENDICES -> AprendizController
-    // =========================================================================
+    // 1. Delegación de Aprendices
     public function viewAprendices(): void
     {
         (new AprendizController())->viewAprendices();
@@ -44,9 +36,7 @@ class GestionController
         (new AprendizController())->eliminarAprendiz();
     }
 
-    // =========================================================================
-    // 2. DELEGACIÓN DE INSTRUCTORES -> InstructorController
-    // =========================================================================
+    // 2. Delegación de Instructores
     public function viewInstructores(): void
     {
         (new InstructorController())->viewInstructores();
@@ -67,9 +57,7 @@ class GestionController
         (new InstructorController())->eliminarInstructor();
     }
 
-    // =========================================================================
-    // 3. DELEGACIÓN DE FICHAS -> FichaController
-    // =========================================================================
+    // 3. Delegación de Fichas
     public function viewFichas(): void
     {
         (new FichaController())->viewFichas();
@@ -90,9 +78,7 @@ class GestionController
         (new FichaController())->eliminarFicha();
     }
 
-    // =========================================================================
-    // 4. DELEGACIÓN DE EXCUSAS -> ExcusaController
-    // =========================================================================
+    // 4. Delegación de Excusas
     public function viewExcusas(): void
     {
         (new ExcusaController())->viewExcusas();
@@ -103,9 +89,7 @@ class GestionController
         (new ExcusaController())->procesarExcusa($nuevoEstado);
     }
 
-    // =========================================================================
-    // 5. DELEGACIÓN DE COMITÉ -> ComiteController
-    // =========================================================================
+    // 5. Delegación de Comité
     public function viewComite(): void
     {
         (new ComiteController())->viewComite();
